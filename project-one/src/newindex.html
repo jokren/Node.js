@@ -1,0 +1,1320 @@
+
+<!DOCTYPE html>
+<html lang="en" id="ng-app" ng-app="app">
+<head>
+    <title>千锋后台 - [title]</title>
+    <meta charset="utf-8" />
+    <link href="/kefu/favicon.ico" rel="shortcut icon">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="description" content="overview &amp; stats" />
+    <meta name="description" content="Common form elements and layouts" />
+    <meta name="description" content="with draggable and editable events" />
+    <!--meta name="viewport" content="width=device-width, initial-scale=1.0" /-->
+    <!-- basic styles -->
+    <link href="../Public/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <!--<link rel="stylesheet" href="/Public/assets/css/font-awesome.min.css" />-->
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="../Public/assets/css/font1-awesome-ie7.min.css" />
+    <![endif]-->
+    <!-- page specific plugin styles -->
+    <link rel="stylesheet" href="../Public/assets/css/jquery-ui-1.10.3.custom.min.css" />
+    <link rel="stylesheet" href="../Public/assets/css/chosen.css" />
+    <link rel="stylesheet" href="../Public/assets/css/datepicker.css" />
+    <link rel="stylesheet" href="../Public/assets/css/bootstrap-timepicker.css" />
+    <link rel="stylesheet" href="../Public/assets/css/daterangepicker.css" />
+    <link rel="stylesheet" href="../Public/assets/css/colorpicker.css" />
+    <link rel="stylesheet" href="../Public/assets/css/fullcalendar.css" />
+    <link rel="stylesheet" href="../Public/assets/css/select2.css" />
+    <!-- fonts
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="../Public/assets/css/ace.min.css" />
+    <link rel="stylesheet" href="../Public/assets/css/ace-rtl.min.css" />
+    <link rel="stylesheet" href="../Public/assets/css/ace-skins.min.css" />
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="/Public/assets/css/ace-ie.min.css" />
+    <![endif]-->
+    <!-- ace settings handler -->
+    <script src="../Public/assets/js/ace-extra.min.js"></script>
+    <!--KindEditor-->
+    <script src="../Public/kindeditor/kindeditor.js"></script>
+
+    <!--layer-->
+    <script src="../Public/assets/js/jquery-1.7.1.min.js"></script>
+    <script src="../Public/assets/js/jquery.base64.js?v=2017"></script>
+    <script src='../Public/assets/js/socket.io.js'></script>
+    <script src='../Public/assets/js/notify.js'></script>
+    <script src="../Public/layer/layer.js"></script>
+    <link rel="stylesheet" href="../Public/layer/skin/layer.css" />
+    <!--<script src="../Public/layer/extend/layer.ext.js"></script>-->
+    <link rel="stylesheet" href="../Public/layer/skin/layer.ext.css" />
+
+    <!--smartMenu-->
+    <link rel="stylesheet" href="../Public/smartmenu/smartMenu.css" />
+    <script src="../Public/smartmenu/jquery-smartMenu.js"></script>
+
+    <!--时间插件-->
+    <script src="../Public/datepicker/jquery-ui.js"></script>
+    <!-- 公共JS -->
+    <script src="../Public/assets/js/common.js?v=20180105"></script>
+
+    <!--时间控件-->
+    <!--<script src="../Public/My97DatePicker/WdatePicker.js"></script>-->
+    <!-- <script src="/Public/assets/js/notification.js"></script> -->
+    <script src="../Public/assets/js/jquery.cookie.js"></script>
+    <link rel="stylesheet" type="text/css" href="font/iconfont.css">
+    <script>
+		$(function() {
+//PC端才执行下面的代码
+			if (IsPC())
+			{
+				var module = "Student";
+				// 连接服务端
+				var socket = io('http://1000phone.net:2120');
+				//socket = io('http://www.kefu.com:2120');
+				// 连接后登录
+				socket.on('connect', function(){
+					var id='stu_430521199603104950';
+					socket.emit('login', id);
+				});
+				// 后端推送来消息时
+				socket.on('new_msg', function(msg){
+					var json = eval('(' + coder(msg) + ')');
+
+					playSound();
+
+					if (json.type)
+					{
+						layer.open({
+							type: 2 //此处以iframe举例
+							,title: '系统分量提醒'
+							,area: ['300px', '200px']
+							,shade: 0.5
+							,offset: [
+								$(window).height()-200,
+								$(window).width()-300
+							]
+							,maxmin: true
+							,content: '/student.php/Api/sequence_data?sid='+json.sid
+							,time:999999999
+
+						});
+					} else {
+						layer.open({
+							type: 1 //此处以iframe举例
+							,title: '系统提醒'
+							,area: ['300px', '200px']
+							,shade: 0.5
+							,offset: [
+								$(window).height()-200,
+								$(window).width()-300
+							]
+							,maxmin: true
+							,content: '<div style="padding:20px;">'+coder(msg)+'</div>'
+							,time:999999999
+
+						});
+					}
+				});
+				// 后端推送来在线数据时
+				socket.on('update_online_count', function(online_stat){
+					$('#online_box').html(online_stat);
+				});
+			}
+		});
+
+
+
+		function coder(a){
+			a = "" + a;
+			return a.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+		}
+
+
+		function playSound()
+		{
+			var borswer = window.navigator.userAgent.toLowerCase();
+			if ( borswer.indexOf( "ie" ) >= 0 )
+			{
+				//IE内核浏览器
+				var strEmbed = '<embed name="embedPlay" src="/Public/music/2.wav" autostart="true" hidden="true" loop="false"></embed>';
+				if ( $( "body" ).find( "embed" ).length <= 0 )
+					$( "body" ).append( strEmbed );
+				var embed = document.embedPlay;
+
+				//浏览器不支持 audion，则使用 embed 播放
+				embed.volume = 100;
+				//embed.play();这个不需要
+			} else
+			{
+				//非IE内核浏览器
+				var strAudio = "<audio id='audioPlay' src='/Public/music/2.wav' hidden='true'>";
+				if ( $( "body" ).find( "audio" ).length <= 0 )
+					$( "body" ).append( strAudio );
+				var audio = document.getElementById( "audioPlay" );
+
+				//浏览器支持 audion
+				audio.play();
+			}
+		}
+
+
+		function IsPC() {
+			var userAgentInfo = navigator.userAgent;
+			var Agents = ["Android", "iPhone",
+				"SymbianOS", "Windows Phone",
+				"iPad", "iPod"];
+			var flag = true;
+			for (var v = 0; v < Agents.length; v++) {
+				if (userAgentInfo.indexOf(Agents[v]) > 0) {
+					flag = false;
+					break;
+				}
+			}
+			return flag;
+		}
+
+    </script>
+</head>
+<body ng-controller="AppController" nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
+<div class="navbar navbar-default" id="navbar">
+    <script type="text/javascript">
+		try{ace.settings.check('navbar' , 'fixed')}catch(e){}
+    </script>
+
+    <div class="navbar-container" id="navbar-container">
+        <div class="navbar-header pull-left">
+            <a href="index.html" class="navbar-brand">
+                <small>
+                    <img src="font/1_03.png">
+                    <font size="5" style="font-family:楷体">学员系统</font>
+                </small>
+            </a><!-- /.brand -->
+        </div><!-- /.navbar-header -->
+
+        <div class="navbar-header pull-right" role="navigation">
+            <ul class="nav ace-nav">
+
+                <li class="light-blue">
+                    <a data-toggle="dropdown" href="#" class="dropdown-toggle">
+                        <i class="icon-caret-down"></i>
+                    </a>
+                    <ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+                        <li><a href="/student.php/Index/setuserpwd"><i class="icon-cog"></i>修改密码</a></li>
+                        <li class="divider"></li>
+                        <li><a href="/student.php/Public/logout"><i class="icon-off"></i>退出</a></li>
+                    </ul>
+                </li>
+
+            </ul><!-- /.ace-nav -->
+        </div><!-- /.navbar-header -->
+    </div><!-- /.container -->
+    <!--此处可引用side.html-->
+</div>
+<div class="main-container" id="main-container">
+<script type="text/javascript">
+	try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+</script>
+<div class="main-container-inner">
+    <a class="menu-toggler" id="menu-toggler" href="#"><span class="menu-text"></span></a>
+    <div class="sidebar" id="sidebar">
+        <script type="text/javascript">
+			try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+        </script>
+        <style>
+            .active_nav{background-color: #6fb3e0!important;color: #F5F5F5;}
+
+        </style>
+        <div class="sidebar-shortcuts" id="sidebar-shortcuts">
+            <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
+                <a href="JavaScript:void(0);"><button class="btn btn-info" style='width:100%'><i class="iconfont icon-fangzi home-icon btn-lg"></i></button></a>
+                <!--<button class="btn btn-info"><i class="icon-pencil"></i></button>
+                <button class="btn btn-warning"><i class="icon-group"></i></button>
+                <button class="btn btn-danger"><i class="icon-cogs"></i></button>-->
+            </div>
+            <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+                <span class="btn btn-success"></span>
+                <span class="btn btn-info"></span>
+                <span class="btn btn-warning"></span>
+                <span class="btn btn-danger"></span>
+            </div>
+        </div><!-- #sidebar-shortcuts -->
+        <ul class="nav nav-list">
+            <li class="active">
+                <a href="JavaScript:void(0);" class="dropdown-toggle">
+                    <i class="iconfont icon-ren"></i>
+                    <span class="menu-text">学员后台</span>
+                    <b class="arrow icon-angle-down iconfont icon-xiangxia"></b></a>
+                <ul class="submenu">
+                    <li class="">
+                        <a href="complaint.html" class='dropdown-toggle'>
+                            <i class='icon-shuangjiantouyou iconfont'></i>
+                            <span  class="menu-text ">匿名投诉</span>
+                        </a>
+                    </li><li class="">
+                    <a href="problem.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">技术问题</span>
+                    </a>
+                </li><li class="">
+                    <a href="itemUpload.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">项目上传</span>
+                    </a>
+                </li><li class="active_nav">
+                    <a href="index.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span style="color:#F5F5F5;" class="menu-text ">我的资料</span>
+                    </a>
+                </li><li class="">
+                    <a href="moneyDetail.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">交费明细</span>
+                    </a>
+                </li><li class="">
+                    <a href="Exam.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span   class="menu-text ">参加考试</span>
+                    </a>
+                </li><li class="">
+                    <a href="evaluate.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">学员评价</span>
+                    </a>
+                </li><li class="">
+                    <a href="weekly.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">学员周报</span>
+                    </a>
+                </li><li class="">
+                    <a href="stuvip.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">VIP</span>
+                    </a>
+                </li>        </ul>
+            </li><li class="">
+            <a href="JavaScript:void(0);" class="dropdown-toggle">
+                <i class=" iconfont icon-yun"></i>
+                <span class="menu-text">编程挑战</span>
+                <b class="arrow icon-angle-down iconfont icon-xiangxia"></b></a>
+            <ul class="submenu">
+                <li class="">
+                    <a href="Program.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">编程题库</span>
+                    </a>
+                </li><li class="">
+                <a href="program_status.html" class='dropdown-toggle'>
+                    <i class='icon-shuangjiantouyou iconfont'></i>
+                    <span  class="menu-text ">答题状态</span>
+                </a>
+            </li><li class="">
+                <a href="classView.html" class='dropdown-toggle'>
+                    <i class='icon-shuangjiantouyou iconfont'></i>
+                    <span  class="menu-text ">班级答题情况</span>
+                </a>
+            </li>        </ul>
+        </li><li class="">
+            <a href="JavaScript:void(0);" class="dropdown-toggle">
+                <i class="iconfont icon-iconset0254"></i>
+                <span class="menu-text">学员考勤</span>
+                <b class="arrow icon-angle-down iconfont icon-xiangxia"></b></a>
+            <ul class="submenu">
+                <li class="">
+                    <a href="leave.html" class='dropdown-toggle'>
+                        <i class='icon-shuangjiantouyou iconfont'></i>
+                        <span  class="menu-text ">学员请假</span>
+                    </a>
+                </li><li class="">
+                <a href="discipline.html" class='dropdown-toggle'>
+                    <i class='icon-shuangjiantouyou iconfont'></i>
+                    <span  class="menu-text ">学员违纪</span>
+                </a>
+            </li>        </ul>
+        </li>	</ul><!-- /.nav-list -->
+
+        <div class="sidebar-collapse" id="sidebar-collapse">
+            <i class="iconfont icon-youjiantou" data-icon1="iconfont icon-youjiantou " data-icon2=" icon-shuangjiantouyou iconfont"></i>
+        </div>
+        <script type="text/javascript">
+			try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+        </script>
+    </div>
+
+        <div class="main-content">
+            <div class="breadcrumbs" id="breadcrumbs">
+                <script type="text/javascript">
+					try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+                </script>
+                <ul class="breadcrumb">
+                    <li><a href='index.html' title='GO！'data-rel='tooltip'  data-placement='right'>学员后台</a></li><li class='active_test'><a href='index.html'>我的资料</a></li><li class='active_test'>修改资料</li>
+                </ul><!-- .breadcrumb -->
+                <div style="float: right;">
+                </div>
+
+            </div>
+
+            <div class="page-content" style="padding:0px;">
+                <div class="page-header" style="text-align:center;padding:0px;">
+                    <h3>编辑个人资料</h3>
+                    <h4 style="color:red;">以下资料请确保真实有效，请勿删除或随意填写。</h4>
+                </div>
+                <div class="col-sm-6" >
+
+                    <div class="tab-content">
+                        <div  id="Teacher">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <!-- PAGE CONTENT BEGINS -->
+                                    <form enctype="multipart/form-data"  class="form-horizontal" id="actionform" action="" method="POST">
+                                        <input type="hidden" name="StuId" value="90391" />
+
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label no-padding-right" style="color:red" for="form-field-1"> 学员姓名： </label>
+
+                                            <div class="col-sm-10">
+                                                <div  style="float:left">
+                                                    <input type="text" id="StuName" name="StuName" value=""  placeholder="学员姓名(必填)" onblur="if(!/^[\u4e00-\u9fa5|·]+$/gi.test(this.value)){$(this).val('');layer.msg('名字不规范，请重新填写!')}" class="col-xs-10 col-sm-5" style="width:150px;" required="required" >
+                                                </div>
+                                                <div style="float:left;margin-left:10px;color:red">
+                                                    性别：&nbsp;&nbsp;
+                                                    <select id="Sex" name="Sex" style="width:85px;">
+                                                        <option value="2" selected >男</option><option value="3"  >女</option>                                        </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-4"></div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label no-padding-right" style="color:red" for="form-field-1"> 手机号码： </label>
+                                            <div class="col-sm-10">
+                                                <input type="text" id="Tel" name="addtel"  value="111111" placeholder="请输入您的手机号码" class="col-xs-10 col-sm-4" >
+
+                                            </div>
+                                        </div>
+
+                                        <div class="space-4"></div>
+                                        <div class="form-group"h>
+                                            <label class="col-sm-2 control-label no-padding-right" style="color:red" for="form-field-1"> QQ： </label>
+                                            <div class="col-sm-10">
+                                                <input type="text" id="QQ" name="addqq"  value="11111111" placeholder="请输入您的QQ号码" class="col-xs-10 col-sm-4"   >
+                                            </div>
+                                        </div>
+
+
+                                        <div class="space-4"></div>
+
+                                        <!--=====学员报名=======-->
+                                        <input type="hidden" name="KefuId"  value="15626" />
+
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label no-padding-right" for="form-field-1"> <font color="red">身份证号码</font>： </label>
+                                            <div class="col-sm-10">
+                                                <input type="text" id="IDcard" name="IDcard"  value=""  class="col-xs-10 col-sm-4"   >
+                                                <span class="help-inline col-xs-12 col-sm-7">
+
+                          </span>
+                                            </div>
+
+                                        </div>
+
+                                        <!--  学校插件  -->
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label no-padding-right"  for="form-field-1"> 学校省份： </label>
+                                            <div class="col-sm-10">
+                                                <div  style="float:left;">
+                                                    <select id="ProvinceId" name="ProvinceId" class="select2" style="width:80px;" onchange="findSchool(this)" >
+                                                        <option value="0">请选择所在省份</option>
+                                                        <option value="110000"   >北京市
+                                                        </option><option value="120000"   >天津市
+                                                    </option><option value="130000"   >河北省
+                                                    </option><option value="140000"   >山西省
+                                                    </option><option value="150000"   >内蒙古自治区
+                                                    </option><option value="210000"   >辽宁省
+                                                    </option><option value="220000"   >吉林省
+                                                    </option><option value="230000"   >黑龙江省
+                                                    </option><option value="310000"   >上海市
+                                                    </option><option value="320000"   >江苏省
+                                                    </option><option value="330000"   >浙江省
+                                                    </option><option value="340000"   >安徽省
+                                                    </option><option value="350000"   >福建省
+                                                    </option><option value="360000"   >江西省
+                                                    </option><option value="370000"   >山东省
+                                                    </option><option value="410000"   >河南省
+                                                    </option><option value="420000"   >湖北省
+                                                    </option><option value="430000" selected  >湖南省
+                                                    </option><option value="440000"   >广东省
+                                                    </option><option value="450000"   >广西壮族自治区
+                                                    </option><option value="460000"   >海南省
+                                                    </option><option value="500000"   >重庆市
+                                                    </option><option value="510000"   >四川省
+                                                    </option><option value="520000"   >贵州省
+                                                    </option><option value="530000"   >云南省
+                                                    </option><option value="540000"   >西藏自治区
+                                                    </option><option value="610000"   >陕西省
+                                                    </option><option value="620000"   >甘肃省
+                                                    </option><option value="630000"   >青海省
+                                                    </option><option value="640000"   >宁夏回族自治区
+                                                    </option><option value="650000"   >新疆维吾尔自治区
+                                                    </option><option value="710000"   >台湾省
+                                                    </option><option value="810000"   >香港特别行政区
+                                                    </option><option value="820000"   >澳门特别行政区
+                                                    </option><option value="830000"   >国外</option>          </select>
+                                                </div>
+                                                <div style="float:left;margin-left:20px;">
+                                                    <span >大学名称：</span>&nbsp;&nbsp;
+                                                    <select id="School" name="School" class="select2" style="width:200px;"  onchange="findProfess(this,0)">
+                                                        <option value="0">请选择学校</option><option value="14001" >湖南师大</option><option value="14002" >中南大学</option><option value="14003" >湖南大学</option><option value="14004" >长沙理工</option><option value="14005" >湖南农大</option><option value="14006" >湖南中医药</option><option value="14007" >中南林业科技大学</option><option value="14008" >长沙学院</option><option value="14009" >长沙医学院</option><option value="14010" >湖南涉外经济学院</option><option value="14011" >湖南商学院</option><option value="14012" >湖南人文科技</option><option value="14013" >湘潭大学</option><option value="14014" >湖南科大</option><option value="14015" >湖南工程学院</option><option value="14016" >南华大学</option><option value="14017" >吉首大学</option><option value="14018" >湖南工大</option><option value="14019" >湖南城市</option><option value="14020" >湖南理工学院</option><option value="14021" >湘南学院</option><option value="14022" >衡阳师范学院</option><option value="14023" >湖南文理</option><option value="14024" >怀化学院</option><option value="14025" >湖南科技学院</option><option value="14026" >邵阳学院</option><option value="14027" >保险职业学院</option><option value="14028" >长沙电力职业技术学院</option><option value="14029">长沙航空职业学院</option><option value="14030" >长沙环境保护职业技术学院</option><option value="14031" >长沙民政职业技术学院</option><option value="14032" >长沙南方职业学院</option><option value="14033" >长沙商贸旅游职业技术学院</option><option value="14034" >长沙师范专科学校</option><option value="14035" >长沙通信职业技术学院</option><option value="14036" >长沙职工大学</option><option value="14037" >长沙职业技术学院</option><option value="14038" >常德职业技术学院</option><option value="14039" >郴州职业技术学院</option><option value="14040" >衡阳财经工业职业技术学院</option><option value="14041" >湖南安全技术职业学院</option><option value="14042" >湖南财经高等专科学校</option><option value="14043" >湖南城建职业技术学院</option><option value="14044" >湖南大众传媒学院</option><option value="14045" >湖南第一师范</option><option value="14046" >湖南对外经济贸易职业学院</option><option value="14047" >湖南工程职业技术学院</option><option value="14048" >湖南工学院</option><option value="14049" >湖南工业职业技术学院</option><option value="14050" >湖南工艺美术职业学院</option><option value="14051" >湖南公安高等专科学校</option><option value="14052" >湖南广播电视大学</option><option value="14053" >湖南化工职业技术学院</option><option value="14054" >湖南环境生物职业技术学院</option><option value="14055" >湖南机电职业技术学院</option><option value="14056" >湖南建材高等专科学校</option><option value="14057" >湖南交通工程职业技术学院</option><option value="14058" >湖南交通职业技术学院</option><option value="14059" >湖南经济干部管理学院</option><option value="14060" >湖南九嶷职业技术学院</option><option value="14061" >湖南科技经贸职业学院</option><option value="14062" >湖南科技职业技术学院</option><option value="14063" >湖南理工职业技术学院</option><option value="14064" >湖南娄底远东职业学校</option><option value="14065" >湖南民族职业学院</option><option value="14066" >湖南农业大学国际学院</option><option value="14067" >湖南女子大学</option><option value="14068" >湖南软件职业技术学院</option><option value="14069" >湖南商务职业技术学院</option><option value="14070" >湖南生物环境职业技术学院</option><option value="14071" >湖南生物机电职业技术学院</option><option value="14072" >湖南省水利水电职业技术学院</option><option value="14073" >湖南石油化工职业技术学院</option><option value="14074" >湖南税务高等专科学校</option><option value="14075" >湖南司法警官职业技术学院</option><option value="14076" >湖南体育职业学院</option><option value="14077" >湖南铁道职业技术学院</option><option value="14078" >湖南铁路科技职业技术学院</option><option value="14079" >湖南同德职业学院</option><option value="14080" >湖南网络工程职业学院</option><option value="14081" >湖南现代物流职业技术学院</option><option value="14082" >湖南信息科学职业学院</option><option value="14083" >湖南信息职业技术学院</option><option value="14084" >湖南行政学院</option><option value="14085" >湖南冶金职业技术学院</option><option value="14086" >湖南艺术职业学院</option><option value="14087" >湖南中医药高等专科学校</option><option value="14088" >怀化医学高等专科学校</option><option value="14089" >怀化职业技术学院</option><option value="14090" >娄底理工学院</option><option value="14091" >娄底市卫生学校</option><option value="14092" >娄底职业技术学院</option><option value="14093" >邵阳医学高等专科学校</option><option value="14094" >邵阳职业技术学院</option><option value="14095" >湘潭职业技术学院</option><option value="14096" >湘西民族职业技术学院</option><option value="14097" >潇湘职业学院</option><option value="14098" >益阳职业技术学院</option><option value="14099" >永州职业技术学院</option><option value="14100" >岳阳职业技术学院</option><option value="14101" >张家界航空工业职业技术学院</option><option value="14102" >株洲师范高等专科学校</option><option value="14103" >株洲职业技术学院</option><option value="14104" >湘潭大学兴湘学院</option><option value="14105" >湖南工业大学科技学院</option><option value="14106" >湖南科技大学潇湘学院</option><option value="14107" >南华大学船山学院</option><option value="14108" >湖南商学院北津学院</option><option value="14109" >湖南师范大学树达学院</option><option value="14110" >湖南农业大学东方科技学院</option><option value="14111" >中南林业科技大学涉外学院</option><option value="14112" >湖南文理学院芙蓉学院</option><option value="14113" >湖南理工学院南湖学院</option><option value="14114" >衡阳师范学院南岳学院</option><option value="14115" >湖南工程学院应用技术学院</option><option value="14116" >湖南中医药大学湘杏学院</option><option value="14117" >吉首大学张家界学院</option><option value="14118" >长沙理工大学城南学院</option><option value="14119" >湖南都市职业学院</option><option value="14120" >湖南电子科技职业学院</option><option value="14121" >湖南外国语职业学院</option><option value="34029" >湖南财政经济学院</option><option value="34076" >湖南外贸学院</option><option value="34152" >中国人民解放军国防科学技术大学</option><option value="34161" >湘潭大学职业技术学院</option><option value="34176" >邵阳师范职业技术学院</option><option value="34210" >湖南工业大学</option><option value="34216" >湖南财经工业职业技术学院</option><option value="34270" >湖南电气职业技术学院</option><option value="34273" >长沙保险学院</option><option value="34292" >湖南邮电职业技术学院</option><option value="34306" >湖南科技大学</option><option value="34329" >湖南交通工程学院</option><option value="34336" >株洲职工大学工业学校</option><option value="34415" >湖南城市学院</option><option value="34436" >湖南文理学院</option><option value="34473" >湖南高速铁路职业技术学院</option><option value="34505" >长沙理工大学云塘校区</option><option value="34514" >湖南应用技术学院</option><option value="34525" >湖南吉利汽车职业技术学院</option><option value="34570" >湖南国防工业职业技术学院</option><option value="34588" >湖南汽车工程职业学院</option><option value="34669" >湖南农业大学理学院</option><option value="34711" >湖南科技经贸职业技术学院</option><option value="34723" >湖南女子学院</option><option value="34730" >湖南警察学院</option><option value="34735" >湖南潇湘技师学院</option><option value="34762" >湖南信息学院</option>            </select>
+                                                </div>
+                                                <div style="float:left;margin-left:20px;">
+                                                    <span id="Prospan">学院专业：</span>&nbsp;&nbsp;
+                                                    <input type="text"  id="ProName"  value=" 111系" style="width:200px;" onclick="findProfess(this,1)"  >
+
+                                                    <input type="hidden" name="Profession" id="Profession" value="14029004" style="width:200px;" onclick="findProfess(this,1)"  >
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                        <script type="text/javascript">
+											//专业选择
+											function education_select(_this)
+											{
+												var ids         = '';
+												$('.education_select').each(function(i){
+													if ($('.education_select').eq(i).is(":checked"))
+													{
+														ids += $('.education_select').eq(i).val() + ',';
+													}
+												});
+												var len = ids.length;
+												var ids = ids.substring(0,len-1);
+												$('#Profession').val(ids);
+											}
+
+											//ajax查找学校
+											function findSchool(_this)
+											{
+												var provinceID = $(_this).find("option:selected").val();
+												$('#School').html('');
+												$.post(
+													"/student.php/Public/ajaxGetSchool",{provinceID:provinceID},
+													function (res)
+													{
+														$('#School').append(res);
+													}, 'html'
+												);
+											}
+											//ajax查找学校专业
+											function findProfess(_this, sid)
+											{
+												if (sid > 0)
+												{
+													var sid       = $('#Profession').val();
+													var collegeID = $('#School').find("option:selected").val();
+												} else {
+													var collegeID = $(_this).find("option:selected").val();
+													$('#Profession').val('');
+												}
+
+												if (collegeID == '添加学校')
+												{
+													layer.open({
+														type: 1,
+														title:'添加学校',
+														skin: 'layui-layer-rim', //加上边框
+														area: ['400px'], //宽高
+														content: '<form id="add_School" style="height:300px;"><div style="width:100%;padding:20px;"><div>学校名称：<input type="text" style="width:250px;" name="name" id="School_name" ></div>  <div id="pbody" style="margin-top:5px;">学院专业：<input type="text" style="width:250px;" name="profess_name[]" class="profess_name"  > <a href="javascript:;" onclick="add_sc_html()">加</a>  </div></div> <input type="hidden" name="provinceID" id="proId"> </form>',
+														btn: ['确定添加'],
+														yes:function(index, layero)
+														{
+															//添加学员和专业
+															add_School();
+															layer.close(index);
+														}
+													});
+
+													return false;
+												}
+
+												if (collegeID == 0)
+												{
+													layer.msg("请先选择大学学校名称"); return false;
+												}
+
+
+												$.post(
+													"/student.php/Public/ajaxGetProfess",{collegeID:collegeID, sid},
+													function (res)
+													{
+														layer.open({
+															type: 1,
+															title:'<strong style="color:red">请选择学院和专业！</strong>',
+															skin: 'layui-layer-rim', //加上边框
+															area: ['1200px'], //宽高
+															content: res,
+															btn: ['确认选择','关闭'],
+															yes:function(index, layero)
+															{
+																$('#ProName').val(getTxtNameIsChecked());
+																str=$('#ProName').val();
+																addpro='<span>所属专业：</span>&nbsp;&nbsp;<input type="text"  id="ProName2"  value="" style="width:200px;">';
+																//专业为空的情况下进行添加操作
+																if(str.indexOf("学院") > -1 && str.indexOf("系") > -1  ){
+																	$('#Prospan').html("学院、系:");
+																	$('#addpro').html(addpro);
+																} else if(str.indexOf("系") > -1){
+																	$('#Prospan').html("学院系别:");
+																	$('#addpro').html(addpro);
+																}else if(str.indexOf("学院") > -1){
+																	$('#Prospan').html("所属学院:");
+																	$('#addpro').html(addpro);
+																}else{
+																	$('#addpro').empty();
+																}
+																if(str.indexOf("专业") > -1){
+																	$('#addpro').empty();
+																}
+																if ( !$('#Profession').val() )
+																{
+																	//添加专业
+																	add_profess();
+
+																}
+																layer.close(index);
+															}
+														});
+													}, 'html'
+												);
+											}
+
+
+											function getTxtNameIsChecked()
+											{
+
+												var txt_name = '';
+												$('.education_select').each(function(){
+													if ($(this).is(':checked'))
+													{
+														txt_name += ' ' +  $(this).attr('txt_name');
+													}
+												});
+
+												return txt_name;
+											}
+
+											function add_sc_html()
+											{
+												$('#pbody').append('<div style="margin-top:5px;"> 学院专业：<input type="text" style="width:250px;" name="profess_name[]" class="profess_name"  > <a href="javascript:;" onclick="del_sc_html(this)">删</a> </div>');
+											}
+
+											function del_sc_html(_this)
+											{
+												$(_this).parent().remove();
+											}
+
+											//添加学院和专业
+											function add_School()
+											{
+												$('#proId').val( $('#ProvinceId').find("option:selected").val() );
+
+												var schoolData = $('#add_School').serialize();
+												var sname = $('#School_name').val();
+
+												if (sname == '')
+												{
+													layer.msg('请填写要添加的学校名字'); return false;
+												}
+												var flag = false;
+												$(".profess_name").each(function(i){
+													if ($(".profess_name").eq(i).val() == '')
+													{
+														flag = true;
+													}
+												});
+
+												if (flag)
+												{
+													layer.msg('请填写要添加的院校/专业名字'); return false;
+												}
+
+												$.post(
+													"/student.php/Public/ajaxAddSchool",schoolData,
+													function(res){
+														if (res.ID)
+														{
+															$("#School").append("<option value='"+res.ID+"'>"+sname+"</option>");
+
+															layer.msg(res.msg);
+														} else {
+															layer.msg(res.msg);
+														}
+													},'json'
+												);
+											}
+
+
+											//添加专业
+											function add_profess()
+											{
+												$('#collID').val( $('#School').find("option:selected").val() );
+												var schoolData = $('#add_School').serialize();
+												var flag = false;
+
+												$(".profess_name").each(function(i){
+													if ($(".profess_name").eq(i).val() == '')
+													{
+														flag = true;
+													}
+												});
+
+												if (flag)
+												{
+													layer.msg('请填写要添加的院校/专业名字'); return false;
+												}
+
+												$.post(
+													"/student.php/Public/ajaxAddSchool",schoolData,
+													function(res){
+														if (res.ID)
+														{
+															var ids = res.ID;
+															var len = ids.length;
+															var ids = ids.substring(0,len-1);
+															$('#Profession').val(ids);
+															layer.msg(res.msg);
+														} else {
+															layer.msg(res.msg);
+														}
+													},'json'
+												);
+
+											}
+
+											//补充专业
+											function appendProfess()
+											{
+												var collegeID = $('#School').find("option:selected").val();
+												if (collegeID == 0)
+												{
+													layer.msg("请先选择大学学校名称"); return false;
+												}
+
+
+												$.post(
+													"/student.php/Public/ajaxGetProfess",{collegeID:''},
+													function (res)
+													{
+														layer.open({
+															type: 1,
+															title:'补充院校/专业',
+															skin: 'layui-layer-rim', //加上边框
+															area: ['400px'], //宽高
+															content: res,
+															btn: ['确定添加'],
+															yes:function(index, layero)
+															{
+																//添加专业
+																add_profess();
+																layer.close(index);
+															}
+														});
+
+													}, 'html'
+												);
+											}
+                                        </script>                            <div class="form-group">
+                                        <label class="col-sm-2 control-label no-padding-right" for="form-field-1"> 在校状态： </label>
+
+                                        <div class="col-sm-10">
+                                            <div  style="float:left">
+                                                <select id="IsStudent" name="IsStudent" class="select2"  >
+                                                    <option value="0">请选择当前状态</option>
+                                                    <option value="167" >非应届</option>
+                                                    <option value="52" >在读</option>
+                                                    <option value="53" >大一</option>
+                                                    <option value="54" >大二</option>
+                                                    <option value="55" >大三</option>
+                                                    <option value="56" >大四</option>
+                                                    <option value="57" >应届</option><option value="58" >在职</option><option value="59" >待业</option>                                        </select>
+                                            </div>
+                                            <div style="float:left;margin-left:45px;">
+                                                学历：&nbsp;&nbsp;
+                                                <select id="Education" name="Education" class="select2" >
+                                                    <option value="0">请选择学历</option>
+                                                    <option value="340" >博士</option>
+                                                    <option value="61" >硕士+</option><option value="62" >本科</option>
+                                                    <option value="63">专科</option><option value="64" >高中-</option>                                        </select>
+                                            </div>
+                                            <div style="float:left;margin-left:20px;" id="addpro">
+                                                <span>专业名称：</span>&nbsp;&nbsp;
+                                                <input type="text"  id="ProName2" name="professionalname"  value="" data-original-title="必须填写完整无误的大学专业全称。"  data-rel="tooltip"  data-placement="top" style="width:200px;" >                                    </div>
+                                        </div>
+                                    </div>
+
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label no-padding-right" for="form-field-1"> 专业类型： </label>
+                                            <div class="col-sm-10">
+                                                <div  style="float:left">
+                                                    <select id="is_computer" name="is_computer" class="select2"  >
+                                                        <option value="0" selected>非计算机专业</option>
+                                                        <option value="1" >计算机专业</option>
+                                                    </select>
+                                                </div>
+                                                <div style="float:left;margin-left:20px;">
+                                                    开发经验：&nbsp;&nbsp;
+                                                    <select id="is_develop" name="is_develop" class="select2" >
+                                                        <option value="0" selected>无</option>
+                                                        <option value="1" >有</option>
+                                                    </select>
+                                                </div>
+
+                                                <div style="float:left;margin-left:20px;">
+                                                    使用电脑：&nbsp;&nbsp;
+                                                    <select id="pc" name="pc" class="select2" >
+                                                        <option value="0" selected>学校配发</option>
+                                                        <option value="1" >个人携带</option>
+                                                    </select>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-2 control-label no-padding-right" > 学员所在省份： </label>
+                                            <div class="col-sm-10">
+                                                <div  style="float:left;">
+                                                    <select id="CityId" name="CityId" class="select2" style="width:80px;" onchange="areaSchool(this)" >
+                                                        <option value="0">请选择所在省份</option>
+                                                        <option value="110000" >北京市
+                                                        </option><option value="120000" >天津市
+                                                    </option><option value="130000" >河北省
+                                                    </option><option value="140000" >山西省
+                                                    </option><option value="150000" >内蒙古自治区
+                                                    </option><option value="210000" >辽宁省
+                                                    </option><option value="220000" >吉林省
+                                                    </option><option value="230000" >黑龙江省
+                                                    </option><option value="310000" >上海市
+                                                    </option><option value="320000" >江苏省
+                                                    </option><option value="330000" >浙江省
+                                                    </option><option value="340000" >安徽省
+                                                    </option><option value="350000" >福建省
+                                                    </option><option value="360000" >江西省
+                                                    </option><option value="370000" >山东省
+                                                    </option><option value="410000" >河南省
+                                                    </option><option value="420000" >湖北省
+                                                    </option><option value="430000" >湖南省
+                                                    </option><option value="440000" >广东省
+                                                    </option><option value="450000" >广西壮族自治区
+                                                    </option><option value="460000" >海南省
+                                                    </option><option value="500000" >重庆市
+                                                    </option><option value="510000" >四川省
+                                                    </option><option value="520000" >贵州省
+                                                    </option><option value="530000" >云南省
+                                                    </option><option value="540000" >西藏自治区
+                                                    </option><option value="610000" >陕西省
+                                                    </option><option value="620000" >甘肃省
+                                                    </option><option value="630000" >青海省
+                                                    </option><option value="640000" >宁夏回族自治区
+                                                    </option><option value="650000" >新疆维吾尔自治区
+                                                    </option><option value="710000" >台湾省
+                                                    </option><option value="810000" >香港特别行政区
+                                                    </option><option value="820000" >澳门特别行政区
+                                                    </option><option value="830000" >国外</option>          </select>
+                                                </div>
+                                                <div style="float:left;margin-left:20px;">
+                                                    <span>所在城市：</span>&nbsp;&nbsp;
+                                                    <select id="StucityId" name="StucityId" class="select2" style="width:200px;"  onchange="findAreaid(this)">
+                                                        <option value="0">请选择城市</option>
+                                                        <option value="0">请选择城市</option><option value="430100" >长沙市</option><option value="430200" >株洲市</option><option value="430300" >湘潭市</option><option value="430400" >衡阳市</option><option value="430500" >邵阳市</option><option value="430600" >岳阳市</option><option value="430700" >常德市</option><option value="430800" >张家界市</option><option value="430900" >益阳市</option><option value="431000" >郴州市</option><option value="431100" >永州市</option><option value="431200" >怀化市</option><option value="431300" >娄底市</option><option value="433100" >湘西土家族苗族自治州</option>            </select>
+                                                </div>
+
+                                                <!--<div style="float:left;margin-left:20px;">-->
+                                                    <!--<span>所在区县：</span>&nbsp;&nbsp;-->
+                                                    <!--<select id="AreaId" name="AreaId" class="select2" style="width:200px;" >-->
+                                                        <!--<option value="0">请选择区县</option>-->
+                                                        <!--<option value="0">请选择区县</option><option value="430501" >市辖区</option><option value="430502" >双清区</option><option value="430503" >大祥区</option><option value="430511" >北塔区</option><option value="430521" selected>邵东县</option><option value="430522" >新邵县</option><option value="430523" >邵阳县</option><option value="430524" >隆回县</option><option value="430525" >洞口县</option><option value="430527" >绥宁县</option><option value="430528" >新宁县</option><option value="430529" >城步苗族自治县</option><option value="430581" >武冈市</option>-->
+                                                    <!--</select>-->
+                                                <!--</div>-->
+                                            </div>
+                                        </div>
+
+                                        <script type="text/javascript">
+
+											//ajax查找城市
+											function areaSchool(_this)
+											{
+												var provinceID = $(_this).find("option:selected").val();
+												$('#StucityId').html('');
+												$.post(
+													"/student.php/Public/ajaxGetStucity",{provinceID:provinceID},
+													function (res)
+													{
+														$('#StucityId').append(res);
+													}, 'html'
+												);
+											}
+											//ajax查找区县
+											function findAreaid(_this)
+											{
+												var stucityID = $(_this).find("option:selected").val();
+												$('#AreaId').html('');
+												$.post(
+													"/student.php/Public/ajaxGetAreaid",{provinceID:stucityID},
+													function (res)
+													{
+														$('#AreaId').append(res);
+													}, 'html'
+												);
+											}
+
+
+
+
+                                        </script>                            <div class="form-group">
+                                        <label class="col-sm-2 control-label no-padding-right" for="form-field-1">紧急联系人： </label>
+                                        <div class="col-sm-10">
+                                            <div  style="float:left">
+                                                <input name="contact_person" id="contact_person" value="1111" style="width:200px;"/>
+                                            </div>
+                                            <div style="float:left;margin-left:45px;">
+                                                关系：&nbsp;&nbsp;
+                                                <input name="contact_rel" id="contact_rel" value='11111' style="width:200px;"/>
+                                            </div>
+
+                                            <div style="float:left;margin-left:20px;">
+                                                联系电话：&nbsp;&nbsp;
+                                                <input name="contact_tel" id="contact_tel" value="111111111" style="width:200px;" />
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+
+                                        <div class="form-group" >
+                                            <label class="col-sm-2 control-label no-padding-right" for="form-field-1">
+                                                照片:</label>
+                                            <div class="col-sm-10">
+                                                <div  class="preview" id="view-0">
+                                                    <img width="200px" src= "">
+                                                    <label style="float:right;">示例：<img class="content" src="http://stu.1000phone.net/Uploads/pic/%E4%BA%8C%E5%AF%B8%E7%85%A7%E7%89%87.png"></label>
+                                                </div>
+                                                <input type="file" onchange="preview(this)" name="photo"  />
+                                            </div>
+                                        </div>
+                                        <hr/><div class="form-group" >
+                                        <label class="col-sm-2 control-label no-padding-right" for="form-field-1">
+                                            身份证正面:</label>
+                                        <div class="col-sm-10">
+                                            <div  class="preview" id="view-1">
+                                                <img width="200px" src= "">
+                                                <label style="float:right;">示例：<img class="content" src="http://stu.1000phone.net/Uploads/pic/%E8%BA%AB%E4%BB%BD%E8%AF%81%E6%AD%A3%E9%9D%A2.png" style="width:300px;height:200px"></label>
+                                            </div>
+                                            <input type="file" onchange="preview(this)" name="stu_img_id"  />
+                                        </div>
+                                    </div>
+                                        <hr/><div class="form-group" >
+                                        <label class="col-sm-2 control-label no-padding-right" for="form-field-1">
+                                            身份证反面:</label>
+                                        <div class="col-sm-10">
+                                            <div  class="preview" id="view-2">
+                                                <img width="200px" src= "">
+                                                <label style="float:right;">示例：<img class="content" src="http://stu.1000phone.net/Uploads/pic/%E8%BA%AB%E4%BB%BD%E8%AF%81%E5%8F%8D%E9%9D%A2.png" style="width:300px;height:200px"></label>
+                                            </div>
+                                            <input type="file" onchange="preview(this)" name="stu_img_reverse_id"  />
+                                        </div>
+                                    </div>
+                                        <hr/><div class="form-group" >
+                                        <label class="col-sm-2 control-label no-padding-right" for="form-field-1">
+                                            毕业证:</label>
+                                        <div class="col-sm-10">
+                                            <div  class="preview" id="view-3">
+                                                <img width="200px" src= "">
+                                            </div>
+                                            <input type="file" onchange="preview(this)" name="stu_crad_id"  />
+                                        </div>
+                                    </div>
+                                        <hr/><div class="form-group" >
+                                        <label class="col-sm-2 control-label no-padding-right" for="form-field-1">
+                                            入学照:</label>
+                                        <div class="col-sm-10">
+                                            <div  class="preview" id="view-4">
+                                                <img width="200px" src= "">
+                                                <label style="float:right;">示例：<img class="content" src="http://stu.1000phone.net/Uploads/pic/%E5%89%8D%E5%8F%B0%E7%85%A7.png" style="width:300px;height:200px"></label>			</div>
+                                            <input type="file" onchange="preview(this)" name="stu_school_img"  />
+                                        </div>
+                                    </div>
+                                        <hr/><script type="text/javascript">
+										function preview(file)
+										{
+											var prevDiv = $(file).prev('.preview');
+											console.log(prevDiv);
+											if (file.files && file.files[0])
+											{
+												var reader = new FileReader();
+												reader.onload = function(evt){
+													prevDiv.html();
+													prevDiv.html('<img width="200px" src="' + evt.target.result + '" />');
+												}
+												reader.readAsDataURL(file.files[0]);
+											}
+											else
+											{
+												prevDiv.innerHTML = '<div class="img" style="filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale,src=\'' + file.value + '\'"></div>';
+											}
+										}
+                                    </script>
+                                        <div class="form-group" style="text-align:left;" >
+                                            <div class="col-md-offset-3 col-md-9" style="margin-top:50px;">
+                                                <button class="btn btn-info" id="addstudent" type="button" onclick="addStu()">
+                                                    <i class="icon-ok iconfont icon-gou bigger-110"></i>
+                                                    提交
+                                                </button>
+
+                                                &nbsp; &nbsp; &nbsp;
+                                                <button class="btn" type="reset" style="margin-left:100px;" onclick="history.go(-1)">
+                                                    <i class="icon-undo iconfont icon-fanhui bigger-110"></i>
+                                                    返回
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </form>
+                                </div>
+
+                                <!--                <table class="table table-bordered table">
+                                                    <tr>
+                                                        <th style="width:100px;">操作人</th>
+                                                        <th style="width:150px;">操时间</th>
+                                                        <th>修改内容</th>
+                                                    </tr>
+                                                                    </table>-->
+                            </div>
+                            <div>
+
+
+                            </div>
+
+                        </div><!-- /.page-content -->
+
+                        <script type="text/javascript">
+
+							function delinput(obj){
+								$(obj).parent().parent().remove();
+							}
+
+							function addinput(obj){
+								var html='<div class="form-group"><label class="col-sm-2 control-label no-padding-right" style="color:red" for="form-field-1"> 手机号码： </label> <div class="col-sm-10"> <input type="text" name="addtel[]"  value="" placeholder="附加手机号码" class="col-xs-10 col-sm-4"   > <input type="button" value="删除" onclick="delinput(this)" style="line-height: 21px; margin-left: 10px;"> </div> </div>';
+								$('#addphone').append(html);
+							}
+
+							function addStu(){
+								var tel=$('#Tel').val();
+								var qq=$('#QQ').val();
+								var contact_person = $('#contact_person').val();
+								var contact_tel = $('#contact_tel').val();
+								var contact_rel = $('#contact_rel').val();
+								var CityId = $('#CityId').val();
+								var StucityId = $('#StucityId').val();
+								var AreaId = $('#AreaId').val();
+								if(checkSubmitMobil(tel)===false){
+									$('#Tel').val('');
+									layer.msg('手机号码格式不正确，请重新填写。');
+									return false;
+								}else if(isQQ(qq)===false){
+									$('#QQ').val('');
+									layer.msg('QQ号码格式不正确，请重新填写。');
+									return false;
+								}else if(contact_person == ''){
+									layer.msg('紧急联系人不能为空,请填写');
+								}else if(contact_rel === ''){
+									layer.msg('与本人关系不能为空,请填写');
+								}else if(checkSubmitMobil(contact_tel)===false || contact_tel == tel){
+									layer.msg('紧急联系人电话不正确，请重新填写');
+								}else if(CityId == '' || CityId == 0){
+									layer.msg('所在省份不能为空');
+								}else if(StucityId == '' || StucityId == 0){
+									layer.msg('所在城市不能为空');
+								}else if(AreaId == '' || AreaId == 0){
+									layer.msg('所在县区不能为空');
+								}
+								else{
+									$('#actionform').submit();
+								}
+							}
+                        </script>
+                    </div><!-- /.main-content -->
+
+                    <!--<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+                        <i class="icon-double-angle-up icon-only bigger-110"></i>
+                    </a>-->
+
+                </div><!-- /.main-container-inner -->
+            </div><!-- /.main-container -->
+
+            <script type="text/javascript">
+				if("ontouchend" in document) document.write("<script src='/Public/assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+            </script>
+            <script src="../Public/assets/js/ace.min.js"></script>
+
+            <!-- inline scripts related to this page -->
+            <script type="text/javascript">
+				jQuery(function($) {
+					$('#id-disable-check').on('click', function() {
+						var inp = $('#form-input-readonly').get(0);
+						if(inp.hasAttribute('disabled')) {
+							inp.setAttribute('readonly' , 'true');
+							inp.removeAttribute('disabled');
+							inp.value="This text field is readonly!";
+						}else {
+							inp.setAttribute('disabled' , 'disabled');
+							inp.removeAttribute('readonly');
+							inp.value="This text field is disabled!";
+						}
+					});
+					$(".chosen-select").chosen();
+					$('#chosen-multiple-style').on('click', function(e){
+						var target = $(e.target).find('input[type=radio]');
+						var which = parseInt(target.val());
+						if(which == 2) $('#form-field-select-4').addClass('tag-input-style');
+						else $('#form-field-select-4').removeClass('tag-input-style');
+					});
+					$('[data-rel=tooltip]').tooltip({container:'body'});
+					$('[data-rel=popover]').popover({container:'body'});
+					$('textarea[class*=autosize]').autosize({append: "\n"});
+					$('textarea.limited').inputlimiter({
+						remText: '%n character%s remaining...',
+						limitText: 'max allowed : %n.'
+					});
+					$.mask.definitions['~']='[+-]';
+					$('.input-mask-date').mask('99/99/9999');
+					$('.input-mask-phone').mask('(999) 999-9999');
+					$('.input-mask-eyescript').mask('~9.99 ~9.99 999');
+					$(".input-mask-product").mask("a*-999-a999",{placeholder:" ",completed:function(){alert("You typed the following: "+this.val());}});
+					$( "#input-size-slider" ).css('width','200px').slider({
+						value:1,
+						range: "min",
+						min: 1,
+						max: 8,
+						step: 1,
+						slide: function( event, ui ) {
+							var sizing = ['', 'input-sm', 'input-lg', 'input-mini', 'input-small', 'input-medium', 'input-large', 'input-xlarge', 'input-xxlarge'];
+							var val = parseInt(ui.value);
+							$('#form-field-4').attr('class', sizing[val]).val('.'+sizing[val]);
+						}
+					});
+					$( "#input-span-slider" ).slider({
+						value:1,
+						range: "min",
+						min: 1,
+						max: 12,
+						step: 1,
+						slide: function( event, ui ) {
+							var val = parseInt(ui.value);
+							$('#form-field-5').attr('class', 'col-xs-'+val).val('.col-xs-'+val);
+						}
+					});
+					$( "#slider-range" ).css('height','200px').slider({
+						orientation: "vertical",
+						range: true,
+						min: 0,
+						max: 100,
+						values: [ 17, 67 ],
+						slide: function( event, ui ) {
+							var val = ui.values[$(ui.handle).index()-1]+"";
+
+							if(! ui.handle.firstChild ) {
+								$(ui.handle).append("<div class='tooltip right in' style='display:none;left:16px;top:-6px;'><div class='tooltip-arrow'></div><div class='tooltip-inner'></div></div>");
+							}
+							$(ui.handle.firstChild).show().children().eq(1).text(val);
+						}
+					}).find('a').on('blur', function(){
+						$(this.firstChild).hide();
+					});
+					$( "#slider-range-max" ).slider({
+						range: "max",
+						min: 1,
+						max: 10,
+						value: 2
+					});
+					$( "#eq > span" ).css({width:'90%', 'float':'left', margin:'15px'}).each(function() {
+						// read initial values from markup and remove that
+						var value = parseInt( $( this ).text(), 10 );
+						$( this ).empty().slider({
+							value: value,
+							range: "min",
+							animate: true
+
+						});
+					});
+					$('#id-input-file-1 , #id-input-file-2').ace_file_input({
+						no_file:'No File ...',
+						btn_choose:'Choose',
+						btn_change:'Change',
+						droppable:false,
+						onchange:null,
+						thumbnail:false //| true | large
+						//whitelist:'gif|png|jpg|jpeg'
+						//blacklist:'exe|php'
+						//onchange:''
+						//
+					});
+					$('#id-input-file-3').ace_file_input({
+						style:'well',
+						btn_choose:'Drop files here or click to choose',
+						btn_change:null,
+						no_icon:'icon-cloud-upload',
+						droppable:true,
+						thumbnail:'small',//large | fit
+						//icon_remove:null//set null, to hide remove/reset button
+						/*before_change:function(files, dropped) {
+                            //Check an example below
+                            //or examples/file-upload.html
+                            return true;
+                        }*/
+						/*before_remove : function() {
+                            return true;
+                        }*/
+						preview_error : function(filename, error_code) {
+							//name of the file that failed
+							//error_code values
+							//1 = 'FILE_LOAD_FAILED',
+							//2 = 'IMAGE_LOAD_FAILED',
+							//3 = 'THUMBNAIL_FAILED'
+							//alert(error_code);
+						}
+					}).on('change', function(){
+						//console.log($(this).data('ace_input_files'));
+						//console.log($(this).data('ace_input_method'));
+					});
+					//dynamically change allowed formats by changing before_change callback function
+					$('#id-file-format').removeAttr('checked').on('change', function() {
+						var before_change
+						var btn_choose
+						var no_icon
+						if(this.checked) {
+							btn_choose = "Drop images here or click to choose";
+							no_icon = "icon-picture";
+							before_change = function(files, dropped) {
+								var allowed_files = [];
+								for(var i = 0 ; i < files.length; i++) {
+									var file = files[i];
+									if(typeof file === "string") {
+										//IE8 and browsers that don't support File Object
+										if(! (/\.(jpe?g|png|gif|bmp)$/i).test(file) ) return false;
+									}
+									else {
+										var type = $.trim(file.type);
+										if( ( type.length > 0 && ! (/^image\/(jpe?g|png|gif|bmp)$/i).test(type) )
+											|| ( type.length == 0 && ! (/\.(jpe?g|png|gif|bmp)$/i).test(file.name) )//for android's default browser which gives an empty string for file.type
+										) continue;//not an image so don't keep this file
+									}
+
+									allowed_files.push(file);
+								}
+								if(allowed_files.length == 0) return false;
+
+								return allowed_files;
+							}
+						}
+						else {
+							btn_choose = "Drop files here or click to choose";
+							no_icon = "icon-cloud-upload";
+							before_change = function(files, dropped) {
+								return files;
+							}
+						}
+						var file_input = $('#id-input-file-3');
+						file_input.ace_file_input('update_settings', {'before_change':before_change, 'btn_choose': btn_choose, 'no_icon':no_icon})
+						file_input.ace_file_input('reset_input');
+					});
+					$('#spinner1').ace_spinner({value:0,min:0,max:200,step:10, btn_up_class:'btn-info' , btn_down_class:'btn-info'})
+						.on('change', function(){
+							//alert(this.value)
+						});
+					$('#spinner2').ace_spinner({value:0,min:0,max:10000,step:100, touch_spinner: true, icon_up:'icon-caret-up', icon_down:'icon-caret-down'});
+					$('#spinner3').ace_spinner({value:0,min:-100,max:100,step:10, on_sides: true, icon_up:'icon-plus smaller-75', icon_down:'icon-minus smaller-75', btn_up_class:'btn-success' , btn_down_class:'btn-danger'});
+					$('.date-picker').datepicker({autoclose:true}).next().on(ace.click_event, function(){
+						$(this).prev().focus();
+					});
+					$('input[name=date-range-picker]').daterangepicker().prev().on(ace.click_event, function(){
+						$(this).next().focus();
+					});
+					$('#timepicker1').timepicker({
+						minuteStep: 1,
+						showSeconds: true,
+						showMeridian: false
+					}).next().on(ace.click_event, function(){
+						$(this).prev().focus();
+					});
+					$('#colorpicker1').colorpicker();
+					$('#simple-colorpicker-1').ace_colorpicker();
+					$(".knob").knob();
+					//we could just set the data-provide="tag" of the element inside HTML, but IE8 fails!
+					var tag_input = $('#form-field-tags');
+					if(! ( /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase())) )
+					{
+						tag_input.tag(
+							{
+								placeholder:tag_input.attr('placeholder'),
+								//enable typeahead by specifying the source array
+								source: ace.variable_US_STATES,//defined in ace.js >> ace.enable_search_ahead
+							}
+						);
+					}
+					else {
+						//display a textarea for old IE, because it doesn't support this plugin or another one I tried!
+						tag_input.after('<textarea id="'+tag_input.attr('id')+'" name="'+tag_input.attr('name')+'" rows="3">'+tag_input.val()+'</textarea>').remove();
+						//$('#form-field-tags').autosize({append: "\n"});
+					}
+					$('#modal-form input[type=file]').ace_file_input({
+						style:'well',
+						btn_choose:'Drop files here or click to choose',
+						btn_change:null,
+						no_icon:'icon-cloud-upload',
+						droppable:true,
+						thumbnail:'large'
+					})
+					//chosen plugin inside a modal will have a zero width because the select element is originally hidden
+					//and its width cannot be determined.
+					//so we set the width after modal is show
+					$('#modal-form').on('shown.bs.modal', function () {
+						$(this).find('.chosen-container').each(function(){
+							$(this).find('a:first-child').css('width' , '210px');
+							$(this).find('.chosen-drop').css('width' , '210px');
+							$(this).find('.chosen-search input').css('width' , '200px');
+						});
+					})
+					/*//or you can activate the chosen plugin after modal is shown
+                    //this way select element becomes visible with dimensions and chosen works as expected
+                    $('#modal-form').on('shown', function () {
+                        $(this).find('.modal-chosen').chosen();
+                    })*/
+
+
+					$('[data-rel=tooltip]').tooltip();
+
+					$(".select2").css('width','200px').select2({allowClear:true})
+						.on('change', function(){
+							$(this).closest('form').validate().element($(this));
+						});
+
+
+					var $validation = false;
+					$('#fuelux-wizard').ace_wizard().on('change' , function(e, info){
+						if(info.step == 1 && $validation) {
+							if(!$('#validation-form').valid()) return false;
+						}
+					}).on('finished', function(e) {
+						//$("form").submit();
+					});
+
+				});
+            </script>
+
+
+</body>
+</html>
+<script src="../Public/assets/js/lib/pwdajax.js"></script>
+<script src="../Public/assets/js/lib/jquery.js"></script>
+<script src="../Public/assets/js/lib/newindex2.js"></script>

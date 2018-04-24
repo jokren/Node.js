@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en" id="ng-app" ng-app="app">
+<head>
+	<title>千锋后台 - [title]</title>
+	<meta charset="utf-8" />
+	<link href="/kefu/favicon.ico" rel="shortcut icon">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="description" content="overview &amp; stats" />
+	<meta name="description" content="Common form elements and layouts" />
+	<meta name="description" content="with draggable and editable events" />
+	<!--meta name="viewport" content="width=device-width, initial-scale=1.0" /-->
+	<!-- basic styles -->
+	<link href="../Public/assets/css/bootstrap.min.css" rel="stylesheet" />
+	<!--<link rel="stylesheet" href="/Public/assets/css/font1-awesome.min.css" />-->
+	<!--[if IE 7]>
+	<link rel="stylesheet" href="../Public/assets/css/font1-awesome-ie7.min.css" />
+	<![endif]-->
+	<!-- page specific plugin styles -->
+	<link rel="stylesheet" href="../Public/assets/css/jquery-ui-1.10.3.custom.min.css" />
+	<link rel="stylesheet" href="../Public/assets/css/chosen.css" />
+	<link rel="stylesheet" href="../Public/assets/css/datepicker.css" />
+	<link rel="stylesheet" href="../Public/assets/css/bootstrap-timepicker.css" />
+	<link rel="stylesheet" href="../Public/assets/css/daterangepicker.css" />
+	<link rel="stylesheet" href="../Public/assets/css/colorpicker.css" />
+	<link rel="stylesheet" href="../Public/assets/css/fullcalendar.css" />
+	<link rel="stylesheet" href="../Public/assets/css/select2.css" />
+	<!-- fonts
+
+    <!-- ace styles -->
+	<link rel="stylesheet" href="../Public/assets/css/ace.min.css" />
+	<link rel="stylesheet" href="../Public/assets/css/ace-rtl.min.css" />
+	<link rel="stylesheet" href="../Public/assets/css/ace-skins.min.css" />
+	<!--[if lte IE 8]>
+	<link rel="stylesheet" href="/Public/assets/css/ace-ie.min.css" />
+	<![endif]-->
+	<!-- ace settings handler -->
+	<script src="../Public/assets/js/ace-extra.min.js"></script>
+	<!--KindEditor-->
+	<script src="../Public/kindeditor/kindeditor.js"></script>
+
+	<!--layer-->
+	<script src="../Public/assets/js/jquery-1.7.1.min.js"></script>
+	<script src="../Public/assets/js/jquery.base64.js?v=2017"></script>
+	<script src='../Public/assets/js/socket.io.js'></script>
+	<script src='../Public/assets/js/notify.js'></script>
+	<script src="../Public/layer/layer.js"></script>
+	<link rel="stylesheet" href="../Public/layer/skin/layer.css" />
+	<!--<script src="../Public/layer/extend/layer.ext.js"></script>-->
+	<link rel="stylesheet" href="../Public/layer/skin/layer.ext.css" />
+
+	<!--smartMenu-->
+	<link rel="stylesheet" href="../Public/smartmenu/smartMenu.css" />
+	<script src="../Public/smartmenu/jquery-smartMenu.js"></script>
+
+	<!--时间插件-->
+	<script src="../Public/datepicker/jquery-ui.js"></script>
+	<!-- 公共JS -->
+	<script src="../Public/assets/js/common.js?v=20180105"></script>
+
+	<!--时间控件-->
+	<!--<script src="../Public/My97DatePicker/WdatePicker.js"></script>-->
+	<!-- <script src="/Public/assets/js/notification.js"></script> -->
+	<script src="../Public/assets/js/jquery.cookie.js"></script>
+	<link rel="stylesheet" type="text/css" href="font/iconfont.css">
+	<script>
+		$(function() {
+//PC端才执行下面的代码
+			if (IsPC())
+			{
+				var module = "Student";
+				// 连接服务端
+				var socket = io('http://1000phone.net:2120');
+				//socket = io('http://www.kefu.com:2120');
+				// 连接后登录
+				socket.on('connect', function(){
+					var id='stu_430521199603104950';
+					socket.emit('login', id);
+				});
+				// 后端推送来消息时
+				socket.on('new_msg', function(msg){
+					var json = eval('(' + coder(msg) + ')');
+
+					playSound();
+
+					if (json.type)
+					{
+						layer.open({
+							type: 2 //此处以iframe举例
+							,title: '系统分量提醒'
+							,area: ['300px', '200px']
+							,shade: 0.5
+							,offset: [
+								$(window).height()-200,
+								$(window).width()-300
+							]
+							,maxmin: true
+							,content: '/student.php/Api/sequence_data?sid='+json.sid
+							,time:999999999
+
+						});
+					} else {
+						layer.open({
+							type: 1 //此处以iframe举例
+							,title: '系统提醒'
+							,area: ['300px', '200px']
+							,shade: 0.5
+							,offset: [
+								$(window).height()-200,
+								$(window).width()-300
+							]
+							,maxmin: true
+							,content: '<div style="padding:20px;">'+coder(msg)+'</div>'
+							,time:999999999
+
+						});
+					}
+				});
+				// 后端推送来在线数据时
+				socket.on('update_online_count', function(online_stat){
+					$('#online_box').html(online_stat);
+				});
+			}
+		});
+
+
+
+		function coder(a){
+			a = "" + a;
+			return a.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+		}
+
+
+		function playSound()
+		{
+			var borswer = window.navigator.userAgent.toLowerCase();
+			if ( borswer.indexOf( "ie" ) >= 0 )
+			{
+				//IE内核浏览器
+				var strEmbed = '<embed name="embedPlay" src="/Public/music/2.wav" autostart="true" hidden="true" loop="false"></embed>';
+				if ( $( "body" ).find( "embed" ).length <= 0 )
+					$( "body" ).append( strEmbed );
+				var embed = document.embedPlay;
+
+				//浏览器不支持 audion，则使用 embed 播放
+				embed.volume = 100;
+				//embed.play();这个不需要
+			} else
+			{
+				//非IE内核浏览器
+				var strAudio = "<audio id='audioPlay' src='/Public/music/2.wav' hidden='true'>";
+				if ( $( "body" ).find( "audio" ).length <= 0 )
+					$( "body" ).append( strAudio );
+				var audio = document.getElementById( "audioPlay" );
+
+				//浏览器支持 audion
+				audio.play();
+			}
+		}
+
+
+		function IsPC() {
+			var userAgentInfo = navigator.userAgent;
+			var Agents = ["Android", "iPhone",
+				"SymbianOS", "Windows Phone",
+				"iPad", "iPod"];
+			var flag = true;
+			for (var v = 0; v < Agents.length; v++) {
+				if (userAgentInfo.indexOf(Agents[v]) > 0) {
+					flag = false;
+					break;
+				}
+			}
+			return flag;
+		}
+
+	</script>
+</head>
+<body ng-controller="AppController" nv-file-drop="" uploader="uploader" filters="queueLimit, customFilter">
+<div class="navbar navbar-default" id="navbar">
+	<script type="text/javascript">
+		try{ace.settings.check('navbar' , 'fixed')}catch(e){}
+	</script>
+
+	<div class="navbar-container" id="navbar-container">
+		<div class="navbar-header pull-left">
+			<a href="index.html" class="navbar-brand">
+				<small>
+					<img src="font/1_03.png">
+					<font size="5" style="font-family:楷体">学员系统</font>
+				</small>
+			</a><!-- /.brand -->
+		</div><!-- /.navbar-header -->
+
+		<div class="navbar-header pull-right" role="navigation">
+			<ul class="nav ace-nav">
+
+				<li class="light-blue">
+					<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+						<i class="icon-caret-down"></i>
+					</a>
+					<ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+						<li><a href="/student.php/Index/setuserpwd"><i class="icon-cog"></i>修改密码</a></li>
+						<li class="divider"></li>
+						<li><a href="/student.php/Public/logout"><i class="icon-off"></i>退出</a></li>
+					</ul>
+				</li>
+
+			</ul><!-- /.ace-nav -->
+		</div><!-- /.navbar-header -->
+	</div><!-- /.container -->
+	<!--此处可引用side.html-->
+</div>
+<div class="main-container" id="main-container">
+	<script type="text/javascript">
+		try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+	</script>
+	<div class="main-container-inner">
+		<a class="menu-toggler" id="menu-toggler" href="#"><span class="menu-text"></span></a>
+		<div class="sidebar" id="sidebar">
+			<script type="text/javascript">
+				try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+			</script>
+			<style>
+				.active_nav{background-color: #6fb3e0!important;color: #F5F5F5;}
+
+			</style>
+			<div class="sidebar-shortcuts" id="sidebar-shortcuts">
+				<div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
+					<a href="JavaScript:void(0);"><button class="btn btn-info" style='width:100%'><i class="iconfont icon-fangzi home-icon btn-lg"></i></button></a>
+					<!--<button class="btn btn-info"><i class="icon-pencil"></i></button>
+                    <button class="btn btn-warning"><i class="icon-group"></i></button>
+                    <button class="btn btn-danger"><i class="icon-cogs"></i></button>-->
+				</div>
+				<div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+					<span class="btn btn-success"></span>
+					<span class="btn btn-info"></span>
+					<span class="btn btn-warning"></span>
+					<span class="btn btn-danger"></span>
+				</div>
+			</div><!-- #sidebar-shortcuts -->
+			<ul class="nav nav-list">
+				<li class="active">
+					<a href="JavaScript:void(0);" class="dropdown-toggle">
+						<i class="iconfont icon-ren"></i>
+						<span class="menu-text">学员后台</span>
+						<b class="arrow icon-angle-down iconfont icon-xiangxia"></b></a>
+					<ul class="submenu">
+						<li class="">
+							<a href="complaint.html" class='dropdown-toggle'>
+								<i class='icon-shuangjiantouyou iconfont'></i>
+								<span  class="menu-text ">匿名投诉</span>
+							</a>
+						</li><li class="">
+						<a href="problem.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">技术问题</span>
+						</a>
+					</li><li class="">
+						<a href="itemUpload.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">项目上传</span>
+						</a>
+					</li><li class="active_nav">
+						<a href="index.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span style="color:#F5F5F5;" class="menu-text ">我的资料</span>
+						</a>
+					</li><li class="">
+						<a href="moneyDetail.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">交费明细</span>
+						</a>
+					</li><li class="">
+						<a href="Exam.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span   class="menu-text ">参加考试</span>
+						</a>
+					</li><li class="">
+						<a href="evaluate.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">学员评价</span>
+						</a>
+					</li><li class="">
+						<a href="weekly.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">学员周报</span>
+						</a>
+					</li><li class="">
+						<a href="stuvip.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">VIP</span>
+						</a>
+					</li>        </ul>
+				</li><li class="">
+				<a href="JavaScript:void(0);" class="dropdown-toggle">
+					<i class=" iconfont icon-yun"></i>
+					<span class="menu-text">编程挑战</span>
+					<b class="arrow icon-angle-down iconfont icon-xiangxia"></b></a>
+				<ul class="submenu">
+					<li class="">
+						<a href="Program.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">编程题库</span>
+						</a>
+					</li><li class="">
+					<a href="program_status.html" class='dropdown-toggle'>
+						<i class='icon-shuangjiantouyou iconfont'></i>
+						<span  class="menu-text ">答题状态</span>
+					</a>
+				</li><li class="">
+					<a href="classView.html" class='dropdown-toggle'>
+						<i class='icon-shuangjiantouyou iconfont'></i>
+						<span  class="menu-text ">班级答题情况</span>
+					</a>
+				</li>        </ul>
+			</li><li class="">
+				<a href="JavaScript:void(0);" class="dropdown-toggle">
+					<i class="iconfont icon-iconset0254"></i>
+					<span class="menu-text">学员考勤</span>
+					<b class="arrow icon-angle-down iconfont icon-xiangxia"></b></a>
+				<ul class="submenu">
+					<li class="">
+						<a href="leave.html" class='dropdown-toggle'>
+							<i class='icon-shuangjiantouyou iconfont'></i>
+							<span  class="menu-text ">学员请假</span>
+						</a>
+					</li><li class="">
+					<a href="discipline.html" class='dropdown-toggle'>
+						<i class='icon-shuangjiantouyou iconfont'></i>
+						<span  class="menu-text ">学员违纪</span>
+					</a>
+				</li>        </ul>
+			</li>	</ul><!-- /.nav-list -->
+
+			<div class="sidebar-collapse" id="sidebar-collapse">
+				<i class="iconfont icon-youjiantou" data-icon1="iconfont icon-youjiantou " data-icon2=" icon-shuangjiantouyou iconfont"></i>
+			</div>
+			<script type="text/javascript">
+				try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+			</script>
+		</div>
+
+		<div class="main-content">
+			<div class="breadcrumbs" id="breadcrumbs">
+				<script type="text/javascript">
+					try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+				</script>
+				<ul class="breadcrumb">
+					<li class='active_test'><a href='index.html'>系统管理</a></li><li class='active_test'>后台首页</li>
+				</ul><!-- .breadcrumb -->
+				<div style="float: right;">
+				</div>
+
+			</div>
+			<div class="page-content">
+				<div class="row">
+					<div class="col-xs-12">
+						<!-- PAGE CONTENT BEGINS -->
+						<div class="alert alert alert-danger">
+							<button type="button" class="close" data-dismiss="alert">
+								<i class="icon-remove"></i>
+							</button>
+							请补全以下资料： <b>	头像   身份证反面   身份证正面   毕业证       </b>
+						</div>
+
+
+						<!-- /row -->
+						<div class="page-header">
+							<button type="button" class="btn btn-xs btn-primary" onclick=location.href="newindex.html?action_type=new" style="float: right; margin-right:23px;width:100px;height:30px">修改</button>
+							&nbsp;
+						</div>
+
+						<div id="user-profile-1" class="user-profile row">
+							<div class="col-xs-12 col-sm-3 center">
+								<div>
+			<span class="profile-picture">
+				<img id="avatar" style="width:180px;height:200px;" class="editable img-responsive editable-click editable-empty" alt="请上传照片" src=""></img>
+			</span>
+
+									<div class="space-4"></div>
+
+									<div class="width-80 label label-info label-xlg arrowed-in arrowed-in-right">
+										<div class="inline position-relative">
+											<a href="#" class="user-title-label dropdown-toggle" data-toggle="dropdown">
+												<i class="icon-circle light-green middle"></i>
+												&nbsp;
+												<span class="white"> </span>
+											</a>
+
+
+										</div>
+									</div>
+								</div>
+
+
+							</div>
+
+							<div class="col-xs-12 col-sm-9">
+
+								<div class="profile-user-info profile-user-info-striped">
+
+									<div class="profile-info-row">
+										<div class="profile-info-name"> 身份证号码 </div>
+										<div class="profile-info-value">
+											<span id="showIdCard">******************</span>  <a href="javascript:void(0)" style="margin-left:50px;" onclick="showIdCard()"><!--【查看】--></a>
+											<script type="text/javascript">
+												function showIdCard()
+												{
+													$('#showIdCard').text($('#idNumber').val());
+												}
+											</script>
+											<input type="hidden" id = "idNumber" value="430521199603104950" />
+										</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 手机号 </div>
+										<div class="profile-info-value">
+											******************
+											<!--15211076931-->
+										</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> QQ </div>
+										<div class="profile-info-value">
+											******************
+											<!--1542265479-->
+										</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 学号 </div>
+										<div class="profile-info-value">
+                                            cs1701	       </div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 毕业学院 </div>
+										<div class="profile-info-value School">
+															</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 在校状态 </div>
+										<div class="profile-info-value IsStudent">
+														</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 学历 </div>
+										<div class="profile-info-value Education">
+															</div>
+									</div>
+
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 千锋班级 </div>
+										<div class="profile-info-value">
+												cs1701			</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 招生老师 </div>
+										<div class="profile-info-value">
+												符老师			</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 报名日期 </div>
+										<div class="profile-info-value">
+												2017-11-10			</div>
+									</div>
+									<div class="profile-info-row" style="height:32px">
+										<div class="profile-info-name"> 介绍人 </div>
+										<div class="profile-info-value">
+													无		</div>
+									</div>
+								</div>
+
+
+
+
+
+							</div>
+						</div>
+						<div class="col-xs-12">
+
+							<div class='form-group'>
+								<div class="table-responsive" style="overflow: auto;">
+             <span class="col-xs-6">
+                        <span class="inline"> <h5>[ <b>我的消息</b> ]</h5> </span>
+             </span>
+									<table id="" class="table table-bordered">
+										<tr style="background-color: #edf3f4">
+											<th width="24%">消息内容</th>
+											<th width="3%">时间</th>
+										</tr>
+									</table>
+								</div>
+							</div>
+
+
+							<div class='form-group'>
+								<div class="table-responsive" style="overflow: auto;">
+             <span class="col-xs-6">
+                        <span class="inline"> <h5>[ <b>班主任寄语</b> ]</h5> </span>
+             </span>
+									<table id="" class="table table-bordered">
+										<tr style="background-color: #edf3f4">
+											<th width="4%">评价老师</th>
+											<th width="20%">寄语内容</th>
+											<th width="5%">时间</th>
+										</tr>
+
+
+									</table>
+									<!--<span class="col-xs-6">
+                                                <span class="inline"><h5>[  <b>学员考勤</b> ] </h5> </span>
+                                     </span>
+                                            <table id="" class="table table-bordered">
+                                                <tr style="background-color: #edf3f4">
+
+                                                    <th width="4%">姓名</th>
+                                                    <th width="5%">类型</th>
+                                                    <th width="7%">扣除（分数）</th>
+                                                    <th width="5%">剩余分数</th>
+                                                    <th width="5%">理由</th>
+                                                    <th width="5%">操作人</th>
+                                                    <th width="5%">操作时间</th>
+                                                </tr>
+
+
+                                            </table>-->
+
+									<!--<span class="col-xs-6">
+                                               <span class="inline">
+                                               <span class="inline"> <b>就业老师统计数据</b> </span>
+
+                                               </span>
+                                       </span>
+
+                                           <table id="sample-table-2" class="table table-bordered">
+                                               <thead><tr>
+                                                   <th width="4%">编号</th>
+                                                   <th width="11%">学号</th>
+                                                   <th width="5%">姓名</th>
+                                                   <th width="5%">就业老师</th>
+                                                   <th width="7%">是否工作</th>
+                                                   <th width="7%">薪水</th>
+                                                   <th width="5%">学历</th>
+                                                   <th width="5%">毕业</th>
+                                                   <th width="5%">入职单位</th>
+                                                   <th width="5%">就业地点</th>
+                                                   <th width="5%">特殊情况</th>
+                                               </tr></thead>
+                                                                       <tr><td colspan="13"><div class="dataTables_paginate paging_bootstrap" style='text-align:center'><ul class="pagination"></ul></div></td></tr>
+                                           </table>-->
+								</div>
+							</div>
+
+
+							<div class='form-group'>
+								<div class="table-responsive" style="overflow: auto;">
+            	<span class="col-xs-6">
+					<span class="inline"> <h5>[ <b>千锋其他会员开通</b> ]</h5> </span>
+				</span>
+									<table id="" class="table table-bordered">
+										<tr style="background-color: #edf3f4">
+											<th width="4%">产品名称</th>
+											<th width="20%">产品描述</th>
+											<th width="15%">开通信息</th>
+										</tr>
+										<tr>
+											<td>扣丁学堂</td>
+											<td>扣丁学堂大量免费线上视频，不定期更新，为您规划职业路线。<br>官方网站: <a href='http://www.codingke.com'>http://www.codingke.com</a> </td>
+											<td><font color="red">您还未开通扣丁学堂 </font> <button onclick="regcondigke(1)">立即开通</button></td>
+										</tr>					</table>
+								</div>
+							</div>
+
+						</div>
+
+						<!-- PAGE CONTENT ENDS -->
+					</div><!-- /.col -->
+				</div><!-- /.row -->
+			</div><!-- /.page-content -->
+
+
+			<script>
+				//此处如果支持多应用 需要通过数据表otherproducts 中的code字段来区分调用的地址 目前是单系统 数据结构和模版支持  javascript 和控制器需要改进
+				function regcondigke(id)
+				{
+//					var Account=***********;
+					var ms='确定使用当前手机号:'+Account+'开通扣丁学堂吗？<br>如当前手机号失效请修改手机号之后再次开通!';
+					layer.confirm(ms, {icon: 3, title:'开通扣丁学堂'}, function(){
+						$.ajax({
+							url:"/student.php/Public/tksf",
+							type: "POST",
+							data:{id:id},
+							dataType:'json',
+							async:true,
+							success: function(msg){
+								if(msg == 1 )
+								{
+									layer.msg('开通完成！');
+									location=location;
+
+								}else{
+									layer.msg(msg);
+								}
+							},
+							beforeSend: function(){
+								layer.load(1, {
+									shade: [0.1,'#fff']
+								});
+							}
+						});
+
+					});
+
+
+				}
+			</script>
+		</div><!-- /.main-content -->
+
+		<!--<a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+            <i class="icon-double-angle-up icon-only bigger-110"></i>
+        </a>-->
+
+	</div><!-- /.main-container-inner -->
+</div><!-- /.main-container -->
+
+<script type="text/javascript">
+	if("ontouchend" in document) document.write("<script src='/Public/assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+</script>
+<!--<script src="/Public/assets/js/bootstrap.min.js"></script>-->
+<!--<script src="/Public/assets/js/typeahead-bs2.min.js"></script>-->
+
+<!-- page specific plugin scripts -->
+<!--[if lte IE 8]>
+<script src="/Public/assets/js/excanvas.min.js"></script>
+<![endif]-->
+
+<script src="../Public/assets/js/jquery-ui-1.10.3.custom.min.js"></script>
+<script src="../Public/assets/js/jquery.ui.touch-punch.min.js"></script>
+<script src="../Public/assets/js/jquery.slimscroll.min.js"></script>
+<script src="../Public/assets/js/jquery.easy-pie-chart.min.js"></script>
+<script src="../Public/assets/js/jquery.sparkline.min.js"></script>
+<script src="../Public/assets/js/flot/jquery.flot.min.js"></script>
+<script src="../Public/assets/js/flot/jquery.flot.pie.min.js"></script>
+<script src="../Public/assets/js/flot/jquery.flot.resize.min.js"></script>
+
+<script src="../Public/assets/js/chosen.jquery.min.js"></script>
+<script src="../Public/assets/js/fuelux/fuelux.spinner.min.js"></script>
+<script src="../Public/assets/js/date-time/bootstrap-datepicker.min.js"></script>
+<script src="../Public/assets/js/date-time/bootstrap-timepicker.min.js"></script>
+<script src="../Public/assets/js/date-time/moment.min.js"></script>
+<script src="../Public/assets/js/date-time/daterangepicker.min.js"></script>
+<script src="../Public/assets/js/bootstrap-colorpicker.min.js"></script>
+<script src="../Public/assets/js/jquery.knob.min.js"></script>
+<script src="../Public/assets/js/jquery.autosize.min.js"></script>
+<script src="../Public/assets/js/jquery.inputlimiter.1.3.1.min.js"></script>
+<!--<script src="../Public/assets/js/jquery.maskedinput.min.js"></script>-->
+<script src="../Public/assets/js/bootstrap-tag.min.js"></script>
+
+<script src="../Public/assets/js/fullcalendar.min.js"></script>
+<script src="../Public/assets/js/bootbox.min.js"></script>
+
+<script src="../Public/assets/js/jquery.dataTables.min.js"></script>
+<script src="../Public/assets/js/jquery.dataTables.bootstrap.js"></script>
+
+<script src="../Public/assets/js/fuelux/fuelux.wizard.min.js"></script>
+<script src="../Public/assets/js/jquery.validate.min.js"></script>
+<script src="../Public/assets/js/additional-methods.min.js"></script>
+<script src="../Public/assets/js/bootbox.min.js"></script>
+<!--<script src="../Public/assets/js/jquery.maskedinput.min.js"></script>-->
+<script src="../Public/assets/js/select2.min.js"></script>
+
+<!-- ace scripts -->
+<script src="../Public/assets/js/ace-elements.min.js"></script>
+<script src="../Public/assets/js/ace.min.js"></script>
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+	jQuery(function($) {
+		$('#id-disable-check').on('click', function() {
+			var inp = $('#form-input-readonly').get(0);
+			if(inp.hasAttribute('disabled')) {
+				inp.setAttribute('readonly' , 'true');
+				inp.removeAttribute('disabled');
+				inp.value="This text field is readonly!";
+			}else {
+				inp.setAttribute('disabled' , 'disabled');
+				inp.removeAttribute('readonly');
+				inp.value="This text field is disabled!";
+			}
+		});
+		$(".chosen-select").chosen();
+		$('#chosen-multiple-style').on('click', function(e){
+			var target = $(e.target).find('input[type=radio]');
+			var which = parseInt(target.val());
+			if(which == 2) $('#form-field-select-4').addClass('tag-input-style');
+			else $('#form-field-select-4').removeClass('tag-input-style');
+		});
+		$('[data-rel=tooltip]').tooltip({container:'body'});
+//		$('[data-rel=popover]').popover({container:'body'});
+		$('textarea[class*=autosize]').autosize({append: "\n"});
+		$('textarea.limited').inputlimiter({
+			remText: '%n character%s remaining...',
+			limitText: 'max allowed : %n.'
+		});
+		$.mask.definitions['~']='[+-]';
+		$('.input-mask-date').mask('99/99/9999');
+		$('.input-mask-phone').mask('(999) 999-9999');
+		$('.input-mask-eyescript').mask('~9.99 ~9.99 999');
+		$(".input-mask-product").mask("a*-999-a999",{placeholder:" ",completed:function(){alert("You typed the following: "+this.val());}});
+		$( "#input-size-slider" ).css('width','200px').slider({
+			value:1,
+			range: "min",
+			min: 1,
+			max: 8,
+			step: 1,
+			slide: function( event, ui ) {
+				var sizing = ['', 'input-sm', 'input-lg', 'input-mini', 'input-small', 'input-medium', 'input-large', 'input-xlarge', 'input-xxlarge'];
+				var val = parseInt(ui.value);
+				$('#form-field-4').attr('class', sizing[val]).val('.'+sizing[val]);
+			}
+		});
+		$( "#input-span-slider" ).slider({
+			value:1,
+			range: "min",
+			min: 1,
+			max: 12,
+			step: 1,
+			slide: function( event, ui ) {
+				var val = parseInt(ui.value);
+				$('#form-field-5').attr('class', 'col-xs-'+val).val('.col-xs-'+val);
+			}
+		});
+		$( "#slider-range" ).css('height','200px').slider({
+			orientation: "vertical",
+			range: true,
+			min: 0,
+			max: 100,
+			values: [ 17, 67 ],
+			slide: function( event, ui ) {
+				var val = ui.values[$(ui.handle).index()-1]+"";
+
+				if(! ui.handle.firstChild ) {
+					$(ui.handle).append("<div class='tooltip right in' style='display:none;left:16px;top:-6px;'><div class='tooltip-arrow'></div><div class='tooltip-inner'></div></div>");
+				}
+				$(ui.handle.firstChild).show().children().eq(1).text(val);
+			}
+		}).find('a').on('blur', function(){
+			$(this.firstChild).hide();
+		});
+		$( "#slider-range-max" ).slider({
+			range: "max",
+			min: 1,
+			max: 10,
+			value: 2
+		});
+		$( "#eq > span" ).css({width:'90%', 'float':'left', margin:'15px'}).each(function() {
+			// read initial values from markup and remove that
+			var value = parseInt( $( this ).text(), 10 );
+			$( this ).empty().slider({
+				value: value,
+				range: "min",
+				animate: true
+
+			});
+		});
+		$('#id-input-file-1 , #id-input-file-2').ace_file_input({
+			no_file:'No File ...',
+			btn_choose:'Choose',
+			btn_change:'Change',
+			droppable:false,
+			onchange:null,
+			thumbnail:false //| true | large
+			//whitelist:'gif|png|jpg|jpeg'
+			//blacklist:'exe|php'
+			//onchange:''
+			//
+		});
+		$('#id-input-file-3').ace_file_input({
+			style:'well',
+			btn_choose:'Drop files here or click to choose',
+			btn_change:null,
+			no_icon:'icon-cloud-upload',
+			droppable:true,
+			thumbnail:'small',//large | fit
+			//icon_remove:null//set null, to hide remove/reset button
+			/*before_change:function(files, dropped) {
+				//Check an example below
+				//or examples/file-upload.html
+				return true;
+			}*/
+			/*before_remove : function() {
+				return true;
+			}*/
+			preview_error : function(filename, error_code) {
+				//name of the file that failed
+				//error_code values
+				//1 = 'FILE_LOAD_FAILED',
+				//2 = 'IMAGE_LOAD_FAILED',
+				//3 = 'THUMBNAIL_FAILED'
+				//alert(error_code);
+			}
+		}).on('change', function(){
+			//console.log($(this).data('ace_input_files'));
+			//console.log($(this).data('ace_input_method'));
+		});
+		//dynamically change allowed formats by changing before_change callback function
+		$('#id-file-format').removeAttr('checked').on('change', function() {
+			var before_change
+			var btn_choose
+			var no_icon
+			if(this.checked) {
+				btn_choose = "Drop images here or click to choose";
+				no_icon = "icon-picture";
+				before_change = function(files, dropped) {
+					var allowed_files = [];
+					for(var i = 0 ; i < files.length; i++) {
+						var file = files[i];
+						if(typeof file === "string") {
+							//IE8 and browsers that don't support File Object
+							if(! (/\.(jpe?g|png|gif|bmp)$/i).test(file) ) return false;
+						}
+						else {
+							var type = $.trim(file.type);
+							if( ( type.length > 0 && ! (/^image\/(jpe?g|png|gif|bmp)$/i).test(type) )
+								|| ( type.length == 0 && ! (/\.(jpe?g|png|gif|bmp)$/i).test(file.name) )//for android's default browser which gives an empty string for file.type
+							) continue;//not an image so don't keep this file
+						}
+
+						allowed_files.push(file);
+					}
+					if(allowed_files.length == 0) return false;
+
+					return allowed_files;
+				}
+			}
+			else {
+				btn_choose = "Drop files here or click to choose";
+				no_icon = "icon-cloud-upload";
+				before_change = function(files, dropped) {
+					return files;
+				}
+			}
+			var file_input = $('#id-input-file-3');
+			file_input.ace_file_input('update_settings', {'before_change':before_change, 'btn_choose': btn_choose, 'no_icon':no_icon})
+			file_input.ace_file_input('reset_input');
+		});
+		$('#spinner1').ace_spinner({value:0,min:0,max:200,step:10, btn_up_class:'btn-info' , btn_down_class:'btn-info'})
+			.on('change', function(){
+				//alert(this.value)
+			});
+		$('#spinner2').ace_spinner({value:0,min:0,max:10000,step:100, touch_spinner: true, icon_up:'icon-caret-up', icon_down:'icon-caret-down'});
+		$('#spinner3').ace_spinner({value:0,min:-100,max:100,step:10, on_sides: true, icon_up:'icon-plus smaller-75', icon_down:'icon-minus smaller-75', btn_up_class:'btn-success' , btn_down_class:'btn-danger'});
+		$('.date-picker').datepicker({autoclose:true}).next().on(ace.click_event, function(){
+			$(this).prev().focus();
+		});
+		$('input[name=date-range-picker]').daterangepicker().prev().on(ace.click_event, function(){
+			$(this).next().focus();
+		});
+		$('#timepicker1').timepicker({
+			minuteStep: 1,
+			showSeconds: true,
+			showMeridian: false
+		}).next().on(ace.click_event, function(){
+			$(this).prev().focus();
+		});
+		$('#colorpicker1').colorpicker();
+		$('#simple-colorpicker-1').ace_colorpicker();
+		$(".knob").knob();
+		//we could just set the data-provide="tag" of the element inside HTML, but IE8 fails!
+		var tag_input = $('#form-field-tags');
+		if(! ( /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase())) )
+		{
+			tag_input.tag(
+				{
+					placeholder:tag_input.attr('placeholder'),
+					//enable typeahead by specifying the source array
+					source: ace.variable_US_STATES,//defined in ace.js >> ace.enable_search_ahead
+				}
+			);
+		}
+		else {
+			//display a textarea for old IE, because it doesn't support this plugin or another one I tried!
+			tag_input.after('<textarea id="'+tag_input.attr('id')+'" name="'+tag_input.attr('name')+'" rows="3">'+tag_input.val()+'</textarea>').remove();
+			//$('#form-field-tags').autosize({append: "\n"});
+		}
+		$('#modal-form input[type=file]').ace_file_input({
+			style:'well',
+			btn_choose:'Drop files here or click to choose',
+			btn_change:null,
+			no_icon:'icon-cloud-upload',
+			droppable:true,
+			thumbnail:'large'
+		})
+		//chosen plugin inside a modal will have a zero width because the select element is originally hidden
+		//and its width cannot be determined.
+		//so we set the width after modal is show
+		$('#modal-form').on('shown.bs.modal', function () {
+			$(this).find('.chosen-container').each(function(){
+				$(this).find('a:first-child').css('width' , '210px');
+				$(this).find('.chosen-drop').css('width' , '210px');
+				$(this).find('.chosen-search input').css('width' , '200px');
+			});
+		})
+		/*//or you can activate the chosen plugin after modal is shown
+		//this way select element becomes visible with dimensions and chosen works as expected
+		$('#modal-form').on('shown', function () {
+			$(this).find('.modal-chosen').chosen();
+		})*/
+
+
+		$('[data-rel=tooltip]').tooltip();
+
+		$(".select2").css('width','200px').select2({allowClear:true})
+			.on('change', function(){
+				$(this).closest('form').validate().element($(this));
+			});
+
+
+		var $validation = false;
+		$('#fuelux-wizard').ace_wizard().on('change' , function(e, info){
+			if(info.step == 1 && $validation) {
+				if(!$('#validation-form').valid()) return false;
+			}
+		}).on('finished', function(e) {
+			//$("form").submit();
+		});
+
+	});
+</script>
+
+
+<div id="more" style="margin-left:222px">
+    <p>公司位置:</p>
+
+    <div id="map" style="width: 420px;height: 290px;overflow: hidden;margin:0;float:left"></div>
+     <div style="float:left;width:266px;height:288px;border:1px solid #ccc;margin-left:2px;">
+<p style="margin-top:10px;margin-left:20px;">
+    <span style="display:inline-block;width:40px;height:20px;background-color:green;text-align:center">1</span>
+    <i>长沙市,  岳麓区</i>
+</p>
+
+         <p style="margin-left:20px;margin-top:40px;">长沙千锋有限公司</p>
+         <p style="margin-left:40px;margin-top:30px;">该公司共有一个地址</p>
+
+     </div>
+</div>
+</body>
+</html>
+<script src="../Public/assets/js/lib/pwdajax.js"></script>
+<script src="../Public/assets/js/lib/jquery.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=hNmDV4Ybk2aC3nxOVfD96CQUzftsBfCG"></script>
+<script src="../Public/assets/js/lib/index2.js"></script>
+
+

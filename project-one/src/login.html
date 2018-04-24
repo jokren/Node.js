@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>登录</title>
+
+    <meta name="description" content="User login page" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- basic styles -->
+
+    <link href="../Public/assets/css/bootstrap.min.css" rel="stylesheet" />
+
+
+
+    <!-- page specific plugin styles -->
+
+    <!-- fonts -->
+
+    <!--layer.css-->
+    <link rel="stylesheet" href="../Public/layer/skin/layer.css" />
+
+    <!-- ace styles -->
+
+    <link rel="stylesheet" href="../Public/assets/css/ace.min.css" />
+    <link rel="stylesheet" href="../Public/assets/css/ace-rtl.min.css" />
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="../Public/assets/css/ace-ie.min.css" />
+    <![endif]-->
+
+    <!-- inline styles related to this page -->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+    <!--[if lt IE 9]>
+    <script srctwo="../Public/assets/js/html5shiv.js"></script>
+    <script srctwo="../Public/assets/js/respond.min.js"></script>
+    <![endif]-->
+
+    <script>
+		function bro(){
+			var is360 = false;
+			var isIE = false;
+			if (window.navigator.appName.indexOf("Microsoft") != -1){
+				isIE= true;
+			}
+			if(isIE&&(window.navigator.userProfile+'')=='null'){
+				is360 = true;
+			}
+			if(is360 || isIE ){
+				$('#notice').show();
+			}
+		}
+    </script>
+</head>
+
+</head>
+
+<body class="login-layout" style="background:#6fb3e0" onload="bro();">
+<div class="main-container">
+    <div class="main-content">
+        <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+                <div class="login-container">
+                    <div style="height:100px;"><!-- <img srctwo="/Public/images/logo.png" style="margin-left:30px"> --></div>
+
+                    <div class="space-6"></div>
+
+                    <div class="position-relative">
+                        <div id="login-box"  class="login-box visible widget-box no-border">
+                            <div class="widget-body">
+                                <div class="widget-main">
+                                    <h4 class="header blue lighter bigger" style=" text-align:center; font-size: 27px;">
+                                        学员后台系统
+                                    </h4>
+
+                                    <div class="space-6"></div>
+
+                                    <form class="form-vertical login-form" name="form" method="POST" action="/student.php/Public/login" onsubmit="return checkForm()" >
+                                        <fieldset>
+                                            <label class="block clearfix">
+														<span class="block input-icon input-icon-right">
+														<input type="text" class="form-control id_number" placeholder="身份证号码/学号" name="Account"
+                                                               value="" required="required"/>
+															<i class="iconfont icon-yonghu"></i>
+														</span>
+                                            </label>
+
+                                            <label class="block clearfix">
+														<span class="block input-icon input-icon-right">
+															<input type="password" class="form-control pwd" placeholder="密码" name="PassWord" required="required"/>
+															<i class="iconfont icon-icon2"></i>
+														</span>
+                                            </label>
+
+                                            <div class="space"></div>
+
+                                            <div class="clearfix">
+                                                <!--					<input name="verify"  type="text" maxlength="5" placeholder="验证码" class="form-control" style="vertical-align:middle;width:90px;display:inline" required="required"/>
+                                                                    <img id="verify" srctwo="/index.php/Admin/verify" onclick="getVerify(this)" style="width:90px;height:33px;vertical-align:middle;cursor:pointer">-->
+                                                <button type="submit" class="width-100 pull-right btn btn-sm btn-primary">
+                                                    <i class="iconfont icon-yuechimima"></i>
+                                                    登录
+                                                </button>
+                                                <a id="notice" style="display:none;" href="https://www.baidu.com/s?wd=%E8%B0%B7%E6%AD%8C%E6%B5%8F%E8%A7%88%E5%99%A8&rsv_spt=1&rsv_iqid=0xad459873000d9d97&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=98012088_5_dg&rsv_enter=1&rsv_sug3=2&rsv_n=2" target="_blank">系统检测您的浏览器可能存在兼容问题，建议下载【谷歌浏览器】</a>
+                                            </div>
+
+                                            <div class="space-4"></div>
+                                        </fieldset>
+                                    </form>
+                                    <!--
+
+                                    -->
+                                </div><!-- /widget-main -->
+
+                                <div class="toolbar clearfix">
+                                    <div style="text-align:center;width:100%;color:white;">
+                                        <a style="color: white;" href="http://bbs.mobiletrain.org/forum.php?gid=197" target="_blank">  学习总结入口 </a>
+                                    </div>
+
+
+                                </div>
+                            </div><!-- /widget-body -->
+                        </div><!-- /login-box -->
+
+
+
+
+                    </div><!-- /position-relative -->
+                </div>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div>
+</div><!-- /.main-container -->
+
+<!-- basic scripts -->
+
+<!--[if !IE]> -->
+
+
+<!-- <![endif]-->
+
+
+
+<!--[if !IE]> -->
+
+<script type="text/javascript">
+	window.jQuery || document.write("<script src='../Public/layer/jquery.js'>"+"<"+"/script>");
+
+	function getVerify(Obj){
+		$(Obj).attr('src','/index.php/Admin/verify');
+	}
+
+
+
+	function checkAdminName(){
+		var AdminName=$("input[name='AdminName']").val();
+		$.ajax({
+			type: "POST",
+			url: "/student.php/Public/checkAdminName",
+			data:{AdminName:AdminName},
+			dataType:"json",
+			async:false,
+			success: function(e){
+				var info=e;
+				if(info){
+					//login  success
+				}else{
+					alert("Sorry: 不存在此用户名");
+					$("#verify").attr('src','/student.php/Public/verify');
+				}
+			}
+		});
+	}
+
+	function checkVerify(){
+		var verify=$("input[name='verify']").val();
+		$.ajax({
+			type: "POST",
+			url: "/student.php/Public/checkVerify",
+			data:{verify:verify},
+			dataType:"json",
+			async:false,
+			success: function(e){
+				var info=e;
+				if(info){
+					//vcode true
+				}else{
+					$("#errorInfo").html("Sorry: 请检查验证码");
+					$("#verify").attr('src','/student.php/Public/verify');
+				}
+			}
+		});
+	}
+
+	function checkForm()
+	{
+		if ($('#Account').val() == '')
+		{
+			alert('请输入密码'); return false;
+		}
+		if ($('#PassWord').val() == '')
+		{
+			alert('请输入密码'); return false;
+		}
+
+		return true;
+	}
+
+
+</script>
+
+<!-- <![endif]-->
+
+<!--[if IE]>
+<script type="text/javascript">
+    window.jQuery || document.write("<script srctwo='/Public/assets/js/jquery-1.10.2.min.js'>"+"<"+"/script>");
+</script>
+<![endif]-->
+
+
+<!-- inline scripts related to this page -->
+
+
+</body>
+</html>
+<script>
+    $(function(){
+        $(".login-form").on("submit",function(){
+			console.log(111);
+			$.ajax({
+                url:"http://localhost:8888/login",
+                type:"POST",
+                data:{
+                    id_number:$(".id_number").val(),
+                    pwd:$(".pwd").val()
+                }
+            }).then((res)=>{
+                if(res=="登录成功"){
+                    sessionStorage.setItem("id_number", $(".id_number").val()*121212);
+                    location.href="index.html"
+                } else {
+                    alert("密码不正确")
+                }
+            })
+            return false
+        })
+    })
+</script>
