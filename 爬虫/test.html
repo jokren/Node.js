@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>阅读 | 片刻网-用文字交换世界</title>
+    <link href="https://qnstatic.pianke.me/public/assets/favicon.ico" rel="icon" type="image/x-icon"/>
+    <link rel="stylesheet" href="https://qnstatic.pianke.me/public/assets/css/read.css">
+    <script src="https://g.alicdn.com/aliww/h5.imsdk/2.1.5/scripts/yw/wsdk.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="m-read-container" v-cloak style="height: 100%">
+    <header-cpt :menu-index="1"></header-cpt>
+
+    <div class="container">
+        <div class="slide-cpt">
+            <div class="banner-btn left-btn" @click="slideMove(0)"></div>
+            <div class="banner-img-box">
+                <ul class="img-group">
+                    <li v-slide :data-index="index" v-for="(item,index) of imgList" @click="showThis(index)">
+                        <a :href="item._url" :style="item._style" target="_blank"><img :src="item.img"></a>
+                    </li>
+                </ul>
+                <div class="banner-line" :style="bannerLineWidth">
+                    <div></div>
+                </div>
+            </div>
+            <div class="banner-btn right-btn" @click="slideMove(1)"></div>
+        </div>
+
+        <div class="index-content">
+            <div class="article-type-group">
+                <div class="title-cpt">分类&nbsp;|&nbsp;Classification</div>
+                <div class="article-type-cpt" v-for="item of readTypeInfos">
+                    <a :href="'./readType.html?type='+item.type+'&tag='+encodeURI(encodeURI(item.typeName))"><img :src="item.img"><span
+                            class="type-bg"></span><span
+                            class="type-title">{{item.typeName}}</span><span class="type-des">{{item.typeEnName}}/{{item.total}}篇</span></a>
+                </div>
+            </div>
+
+            <div class="article-list-group">
+                <div class="title-cpt">热门文章&nbsp;|&nbsp;Hot Articles</div>
+                <div v-for="item of recommendArticle" :class="['article-cpt',{'article-cpt-noimg':!item.cover}]">
+                    <div class="article-info">
+                        <div class="article-info-box">
+                            <div class="article-title"><a :href="'./articleInfo.html?id='+item.id" target="_blank">{{item.title}}</a>
+                            </div>
+                            <div class="article-author"><a :href="'../user/user.html?uid='+item.userinfo.uid"
+                                                           target="_blank">By&nbsp;/&nbsp;{{item.userinfo.uname}}</a>
+                            </div>
+                            <div class="article-content">
+                                {{item.text}}...
+                                <span class="view-all"><a :href="'./articleInfo.html?id='+item.id" target="_blank">VIEW ALL<img
+                                        src="http://qnstatic.pianke.me/public/assets/img/viewall.png"></a></span></div>
+                        </div>
+                        <div class="article-others">{{item.views | numFormat}}次阅读&nbsp;&nbsp;|&nbsp;&nbsp;评论:{{item.comments
+                            | numFormat}}&nbsp;&nbsp;|&nbsp;&nbsp;喜欢:{{item.likes | numFormat}}
+                        </div>
+                    </div>
+                    <div class="article-img" v-show="item.cover" :style="item._cover"><a
+                            :href="'./articleInfo.html?id='+item.id"
+                            target="_blank"></a></div>
+                </div>
+            </div>
+
+            <div class="free-writing">
+                <a href="./readNote.html" target="_blank"><img
+                        src="http://qnstatic.pianke.me/public/assets/img/24hours.jpg"></a>
+            </div>
+
+            <div class="topic"><a href="http://old.pianke.me/collect/" target="_blank"><img
+                    src="http://qnstatic.pianke.me/public/assets/img/topic.jpg"></a></div>
+
+            <div class="topic" style="margin-top: 0;"><a href="http://old.pianke.me/wordcard/" target="_blank"><img
+                    src="http://qnstatic.pianke.me/public/assets/img/wordcard.jpg"></a></div>
+
+        </div>
+    </div>
+
+    <totop-cpt></totop-cpt>
+    <footer-cpt></footer-cpt>
+
+</div>
+<script src="https://qnstatic.pianke.me/pages/read/dist/common.js"></script>
+<script src="https://qnstatic.pianke.me/pages/read/dist/read.js"></script>
+</body>
+</html>
